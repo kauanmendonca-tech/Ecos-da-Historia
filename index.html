@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#101e29" />
-  <title>Ecos da História 0.2 — Uma Jornada pela Memória</title>
+  <title>Ecos da História 0.2.1 — Edição Mobile</title>
   <style>
     :root { --bg:#0c1823; --bg2:#112634; --panel:#182b38; --line:rgba(232,204,145,.18); --ink:#faf2df; --muted:#bac6c8; --gold:#efc478; --teal:#80c8b6; --danger:#ffb5aa; }
     * { box-sizing:border-box; }
@@ -173,28 +173,148 @@ body { background:radial-gradient(ellipse at 3% 7%,#284945 0,transparent 35%),ra
 @media(max-width:700px) { .hud-corner {top:49px;right:8px;font-size:10px;padding:5px 7px;} .toast {top:80px;font-size:11px;} .dialogue-head .portrait {width:64px;height:72px;}.board-buttons {gap:4px;}.board-buttons .small-btn {padding:7px 8px;} .statline {display:none;} }
 @media(prefers-reduced-motion: reduce) { .toast {transition:none;} }
 
+
+/* ==== VERSÃO 0.2.1: INTERFACE RESPONSIVA, ACESSIBILIDADE E MODO HORIZONTAL ==== */
+html { -webkit-text-size-adjust:100%; }
+body { overscroll-behavior-y:contain; }
+.touch-button { -webkit-tap-highlight-color:transparent; touch-action:none; }
+.touch-button:focus-visible {outline:3px solid #fff1b3;outline-offset:3px;}
+.touch-right {display:flex;align-items:flex-end;justify-content:flex-end;gap:12px;}
+.touch-run {width:68px;height:56px;font-size:13px;line-height:1.1;display:flex;flex-direction:column;gap:1px;background:#385765;border-color:#a5c6c1;}
+.touch-run .run-icon {font-size:23px;line-height:1;}
+.touch-action {display:flex;flex-direction:column;gap:2px;justify-content:center;}
+.touch-action .action-icon {font-size:24px;line-height:1;}
+.mobile-label {font-size:12px;font-weight:900;line-height:1;}
+.rotate-overlay {display:none;}
+#fullscreen-toggle {display:inline-flex;align-items:center;justify-content:center;gap:5px;}
+#fullscreen-toggle .fullscreen-icon {font-size:17px;line-height:1;}
+@media (pointer:coarse), (hover:none) {
+  .touch {display:flex;}
+  .touch-button {min-width:44px;min-height:44px;}
+  .small-btn,.primary,.secondary,.choice,.dialogue-choice,.order-choice {min-height:41px;}
+}
+@media (max-width:700px) and (orientation:portrait) {
+  .wrapper {padding:10px 8px 24px;}
+  .topline {margin-bottom:10px;}
+  .board-top {flex-wrap:wrap;row-gap:8px;}
+  .board-buttons {width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;}
+  .board-buttons .small-btn {padding:8px 2px;font-size:11px;white-space:nowrap;}
+  .board-buttons .fullscreen-label {display:none;}
+  .touch {padding:11px 15px;}
+  .touch-right {gap:10px;}
+  .dpad {grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px;}
+  .touch-action {width:90px;height:66px;}
+  .touch-run {width:64px;height:56px;}
+  .modal-root {padding:12px;}
+  .modal {max-height:calc(100dvh - 24px);padding:19px;}
+}
+/* Em telas de toque horizontais, o mapa domina a tela e o controle fica nas laterais. */
+@media (pointer:coarse) and (orientation:landscape) {
+  html,body {width:100%;height:100%;overflow:hidden;}
+  body {margin:0;background:#091b25;}
+  .wrapper {max-width:none;width:100%;height:100vh;height:100dvh;margin:0;padding:0;}
+  .topline,.sidebar,.sources {display:none !important;}
+  .layout {display:block;height:100%;width:100%;}
+  .game-board {position:relative;display:flex;flex-direction:column;width:100%;height:100%;min-height:0;margin:0;border:0;border-radius:0;box-shadow:none;}
+  .board-top {display:flex;flex:0 0 47px;min-height:47px;max-height:47px;z-index:8;padding:4px max(12px,env(safe-area-inset-right)) 4px max(12px,env(safe-area-inset-left));gap:8px;}
+  .board-top .location {font-size:clamp(11px,2.6vh,15px);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .location-dot {flex:none;}
+  .board-top .location span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .board-buttons {display:flex;width:auto;gap:6px;flex:none;}
+  .board-buttons .small-btn {min-height:36px;padding:5px 9px;font-size:clamp(10px,2.25vh,13px);border-radius:9px;}
+  .board-buttons .fullscreen-label {display:none;}
+  .canvas-wrap {flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;background:#142f2d;}
+  #game {width:100%;height:100%;max-width:100%;max-height:100%;aspect-ratio:auto;object-fit:contain;image-rendering:pixelated;}
+  .canvas-hud {left:max(9px,env(safe-area-inset-left));top:8px;gap:5px;}
+  .hud-pill {padding:5px 8px;font-size:10px;}
+  .hud-corner {top:8px;right:max(8px,env(safe-area-inset-right));font-size:10px;padding:5px 8px;}
+  .hint {bottom:9px;left:50%;max-width:40%;white-space:normal;font-size:11px;padding:7px 9px;gap:5px;}
+  .toast {top:43px;max-width:50%;min-width:0;font-size:11px;padding:7px 11px;}
+  .touch {display:flex;position:absolute;inset:auto 0 0 0;z-index:7;pointer-events:none;align-items:flex-end;justify-content:space-between;padding:8px max(13px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(13px,env(safe-area-inset-left));background:transparent;}
+  .touch > div {pointer-events:auto;}
+  .touch-note {display:none;}
+  .dpad {grid-template-columns:repeat(3,clamp(39px,9.5vh,56px));grid-template-rows:repeat(2,clamp(39px,9.5vh,56px));gap:5px;}
+  .touch-button {border-radius:12px;background:#183b4bcc;color:#fff9e9;border:1px solid #e0e8d6a0;border-bottom-width:3px;box-shadow:0 2px 11px #0006;backdrop-filter:blur(4px);font-size:23px;}
+  .touch-button.active {background:#527777e8;transform:scale(.97);}
+  .touch-right {gap:10px;}
+  .touch-run {width:clamp(62px,10vw,80px);height:clamp(52px,14vh,72px);font-size:12px;background:#275f6bd9;}
+  .touch-action {width:clamp(90px,16vw,115px);height:clamp(65px,18vh,86px);background:#e9bd73ed;border-color:#fbe0a9;color:#152e38;}
+  .touch-action .action-icon {font-size:25px;}
+  .touch-run .run-icon {font-size:22px;}
+  .board-foot {display:none;}
+  .intro {inset:0;padding:9px 18px;overflow:auto;}
+  .intro-content {max-width:min(510px,57vw);}
+  .intro-icon {width:39px;height:39px;font-size:23px;margin-bottom:7px;}
+  .intro .intro-kicker {font-size:9px;margin-bottom:7px;padding:4px 9px;}
+  .intro h2 {font-size:clamp(19px,5vh,30px);margin:0 0 7px;}
+  .intro p {font-size:clamp(10px,2.5vh,13px);line-height:1.35;margin:0 auto 9px;}
+  .intro .eyebrow {font-size:10px;}
+  .intro .intro-bullets {margin-bottom:9px;font-size:10px;}
+  .intro .primary {padding:9px 14px;min-height:38px;}
+  .game-board:not(.is-playing) .touch {visibility:hidden;}
+  .modal-root {padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));}
+  .modal {width:min(92vw,660px);max-height:calc(100dvh - 16px);padding:clamp(13px,3vh,22px);border-radius:13px;}
+  .modal h2 {font-size:clamp(20px,4vw,29px);margin-bottom:8px;}
+  .modal p,.dialogue-box {font-size:12px;line-height:1.5;margin-bottom:8px;}
+  .modal blockquote {font-size:13px;line-height:1.4;margin:8px 0;padding:9px 12px;}
+  .modal-actions {gap:7px;margin-top:10px;}
+  .modal-actions .primary,.modal-actions .secondary {min-height:36px;padding:8px 11px;font-size:12px;}
+  .choices {gap:6px;margin:9px 0;}
+  .choice {padding:9px 11px;font-size:12px;min-height:38px;}
+  .dialogue-head {margin:4px 0 9px;gap:10px;}
+  .dialogue-head .portrait {width:48px;height:54px;font-size:25px;}
+  .dialogue-choice {padding:9px 11px;margin-top:5px;font-size:12px;}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:360px) {
+  .board-top {flex-basis:43px;min-height:43px;max-height:43px;}
+  .board-buttons .small-btn {min-height:33px;padding:4px 7px;}
+  .dpad {grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px);gap:4px;}
+  .touch-run {width:58px;height:49px;}
+  .touch-action {width:84px;height:59px;}
+  .touch {padding-bottom:max(6px,env(safe-area-inset-bottom));}
+  .intro-icon {display:none;}
+  .intro .intro-kicker {display:none;}
+  .intro .eyebrow {display:none;}
+}
+/* aviso de rotação só em celulares com tela vertical; é possível continuar se necessário */
+@media (pointer:coarse) and (orientation:portrait) and (max-width:900px) {
+  body:not(.portrait-dismissed) .rotate-overlay {
+    display:flex;position:fixed;inset:0;z-index:100;flex-direction:column;align-items:center;justify-content:center;
+    padding:calc(18px + env(safe-area-inset-top)) 24px calc(18px + env(safe-area-inset-bottom));
+    text-align:center;background:radial-gradient(circle at 50% 30%,#284b55,#0c1c29 72%);
+    color:#fff3d8;overflow:auto;
+  }
+}
+.rotate-symbol {font-size:57px;color:#f6d189;line-height:1;margin-bottom:12px;}
+.rotate-overlay h2 {font-family:Georgia,serif;font-size:clamp(24px,7vw,35px);margin:0 0 12px;max-width:400px;}
+.rotate-overlay p {font-size:14px;line-height:1.65;color:#d7e0dc;margin:0 auto 19px;max-width:400px;}
+.rotate-actions {display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:450px;}
+.rotate-actions button {min-height:47px;}
+.rotate-overlay .rotate-status {margin-top:15px;color:#f9dca2;font-size:12px;max-width:380px;}
+@media (max-width:390px) { .board-buttons .small-btn {font-size:10px;letter-spacing:-.2px;} }
+
   </style>
 </head>
 <body>
 <div class="wrapper">
   <header class="topline">
     <div class="brand"><span class="brand-emblem" aria-hidden="true">✦</span><div><div class="eyebrow">Uma aventura educativa</div><h1>Ecos da História</h1><p class="subtitle">Uma jornada pela memória afro-brasileira</p></div></div>
-    <span class="date-mark">VERSÃO 0.2 · 20 DE NOVEMBRO</span>
+    <span class="date-mark">VERSÃO 0.2.1 · MOBILE</span>
   </header>
   <main class="layout">
     <section class="game-board" aria-label="Jogo">
-      <div class="board-top"><div class="location"><i class="location-dot"></i><span id="zone-name">Bosque da Memória</span></div><div class="board-buttons"><button class="small-btn" id="inventory-top" type="button">▤ Inventário</button><button class="small-btn" id="museum-top" type="button">♜ Museu</button><button class="small-btn" id="sound-toggle" aria-pressed="true" type="button" title="Alternar sons">♫</button><button class="small-btn" id="help-top" type="button">? Ajuda</button></div></div>
+      <div class="board-top"><div class="location"><i class="location-dot"></i><span id="zone-name">Bosque da Memória</span></div><div class="board-buttons"><button class="small-btn" id="inventory-top" type="button">▤ Inventário</button><button class="small-btn" id="museum-top" type="button">♜ Museu</button><button class="small-btn" id="sound-toggle" aria-pressed="true" type="button" title="Alternar sons">♫</button><button class="small-btn" id="help-top" type="button">? Ajuda</button><button class="small-btn" id="fullscreen-toggle" type="button" aria-label="Ativar tela cheia e tentar modo horizontal" title="Tela cheia / tela horizontal"><span class="fullscreen-icon">⛶</span><span class="fullscreen-label">Tela cheia</span></button></div></div>
       <div class="canvas-wrap">
         <canvas id="game" width="960" height="576" tabindex="0" aria-label="Mapa do jogo: use WASD ou setas para se mover e E para interagir"></canvas>
         <div class="canvas-hud"><span class="hud-pill" id="hud-progress">✦ Memórias 0/5</span><span class="hud-pill" id="hud-area">01 / 05</span></div><div class="hud-corner" id="clue-hud">◇ Pistas 0/2</div><div class="toast" id="toast" role="status" aria-live="polite"></div>
         <div class="hint" id="hint"><span class="kbd">E</span> <span id="hint-text">Ler registro histórico</span></div>
         <div class="intro" id="intro">
-          <div class="intro-content"><span class="intro-kicker">✦ Nova jornada · Versão 0.2</span><div class="intro-icon">✦</div><p class="eyebrow">O conhecimento abre caminhos</p><h2>Há histórias que merecem ser ouvidas.</h2><p>Explore cinco cenários, converse com moradores fictícios, encontre pistas, revele memórias de personalidades negras e complete desafios para montar uma exposição.</p><p class="intro-bullets">✧ 5 regiões &nbsp; ✧ 10 pistas &nbsp; ✧ 5 desafios &nbsp; ✧ Museu final</p><button type="button" class="primary" id="start-btn">Iniciar jornada →</button></div>
+          <div class="intro-content"><span class="intro-kicker">✦ Nova jornada · Versão 0.2.1</span><div class="intro-icon">✦</div><p class="eyebrow">O conhecimento abre caminhos</p><h2>Há histórias que merecem ser ouvidas.</h2><p>Explore cinco cenários, converse com moradores fictícios, encontre pistas, revele memórias de personalidades negras e complete desafios para montar uma exposição.</p><p class="intro-bullets">✧ 5 regiões &nbsp; ✧ 10 pistas &nbsp; ✧ 5 desafios &nbsp; ✧ Museu final</p><button type="button" class="primary" id="start-btn">Iniciar jornada →</button></div>
         </div>
       </div>
       <div class="touch" aria-label="Controles para tela sensível ao toque">
         <div><div class="dpad"><span></span><button type="button" class="touch-button" data-dir="up" aria-label="Para cima">↑</button><span></span><button type="button" class="touch-button" data-dir="left" aria-label="Para esquerda">←</button><button type="button" class="touch-button" data-dir="down" aria-label="Para baixo">↓</button><button type="button" class="touch-button" data-dir="right" aria-label="Para direita">→</button></div><div class="touch-note">Mover personagem</div></div>
-        <div><button type="button" class="touch-button touch-action" id="touch-interact">Interagir</button><div class="touch-note">Pegar / conversar</div></div>
+        <div><div class="touch-right"><button type="button" class="touch-button touch-run" data-dir="sprint" aria-label="Segure para correr"><span class="run-icon">⚡</span><span class="mobile-label">Correr</span></button><button type="button" class="touch-button touch-action" id="touch-interact" aria-label="Interagir com objeto ou personagem"><span class="action-icon">✦</span><span class="mobile-label">Interagir</span></button></div><div class="touch-note">Segure para correr · Toque para interagir</div></div>
       </div>
       <div class="board-foot"><span><b>WASD</b> / setas: mover &nbsp; · &nbsp; <b>E</b>: interagir &nbsp; · &nbsp; <b>I</b>: diário &nbsp; · &nbsp; <b>M</b>: museu</span><div class="progress-track"><div class="track" id="track"></div><span id="foot-progress">0 de 5</span></div></div>
     </section>
@@ -207,6 +327,13 @@ body { background:radial-gradient(ellipse at 3% 7%,#284945 0,transparent 35%),ra
   <footer class="sources"><strong>Sobre o conteúdo histórico:</strong> os cenários são simbólicos, não representações fiéis de lugares históricos. Os NPCs (Lia, Bia, Nara, André e Rosa) são personagens fictícios; suas falas não são citações históricas. Os textos foram resumidos para fins educativos. Consulte as fontes para saber mais.
     <div class="sources-links"><a href="https://www.gov.br/palmares/pt-br/assuntos/noticias/zumbi-dos-palmares" target="_blank" rel="noopener">Fundação Cultural Palmares — Zumbi</a><a href="https://www.gov.br/mulheres/pt-br/central-de-conteudos/noticias/2026/maio/conheca-cinco-mulheres-negras-que-lutaram-pela-abolicao-da-escravatura" target="_blank" rel="noopener">Ministério das Mulheres — Dandara</a><a href="https://www.ce.gov.br/sps/2020/07/28/tereza-de-benguela/" target="_blank" rel="noopener">Governo do Ceará — Tereza</a><a href="https://legis.senado.leg.br/norma/26345703" target="_blank" rel="noopener">Senado — Luiz Gama</a><a href="https://bndigital.bn.gov.br/dossies/literatura-matriz-afro-brasileira/obras-no-catalogo-da-biblioteca-nacional/carolina-maria-de-jesus-1914/" target="_blank" rel="noopener">Biblioteca Nacional — Carolina</a></div>
   </footer>
+</div>
+<div class="rotate-overlay" id="rotate-overlay" role="region" aria-label="Sugestão para jogar na horizontal">
+  <div class="rotate-symbol" aria-hidden="true">⟳</div>
+  <h2>Uma aventura melhor na horizontal!</h2>
+  <p>Gire seu celular para o lado para ver o mapa inteiro e jogar com os controles nas laterais. Se a rotação estiver bloqueada, desbloqueie-a no aparelho.</p>
+  <div class="rotate-actions"><button class="primary" id="rotate-try" type="button">⛶ Tentar tela cheia</button><button class="secondary" id="rotate-dismiss" type="button">Jogar na vertical</button></div>
+  <div class="rotate-status" id="rotate-status" role="status" aria-live="polite">Alguns navegadores não permitem forçar a orientação automaticamente.</div>
 </div>
 <div id="modal-root" class="modal-root hidden" role="dialog" aria-modal="true" aria-label="Conteúdo do jogo"><section class="modal" id="modal"><button class="modal-close" id="modal-close" aria-label="Fechar janela" type="button">×</button><div id="modal-content"></div></section></div>
 <script>
@@ -273,7 +400,7 @@ for(let z=Math.max(0,Math.floor(camera/ROOM_W)-1);z<=Math.min(4,Math.floor((came
 drawPlayer();
 let vignette=ctx.createLinearGradient(0,0,0,H);vignette.addColorStop(0,'#081a2233');vignette.addColorStop(.16,'#00000000');vignette.addColorStop(.8,'#00000000');vignette.addColorStop(1,'#081a2255');ctx.fillStyle=vignette;ctx.fillRect(0,0,W,H);
 }
-function gameLoop(t){let dt=Math.min(.04,(t-last)/1000||0);last=t;elapsed+=dt;if(started&&!modalOpen){let dx=0,dy=0;if(keys.has('ArrowLeft')||keys.has('a')||touchKeys.has('left'))dx--;if(keys.has('ArrowRight')||keys.has('d')||touchKeys.has('right'))dx++;if(keys.has('ArrowUp')||keys.has('w')||touchKeys.has('up'))dy--;if(keys.has('ArrowDown')||keys.has('s')||touchKeys.has('down'))dy++;player.moving=!!(dx||dy);if(dx||dy){let speed=(keys.has('Shift')?235:175)*dt,len=Math.hypot(dx,dy);dx=dx/len*speed;dy=dy/len*speed;if(canStand(player.x+dx,player.y))player.x+=dx;if(canStand(player.x,player.y+dy))player.y+=dy;player.direction=dx<0?-1:dx>0?1:player.direction;}
+function gameLoop(t){let dt=Math.min(.04,(t-last)/1000||0);last=t;elapsed+=dt;if(started&&!modalOpen){let dx=0,dy=0;if(keys.has('ArrowLeft')||keys.has('a')||touchKeys.has('left'))dx--;if(keys.has('ArrowRight')||keys.has('d')||touchKeys.has('right'))dx++;if(keys.has('ArrowUp')||keys.has('w')||touchKeys.has('up'))dy--;if(keys.has('ArrowDown')||keys.has('s')||touchKeys.has('down'))dy++;player.moving=!!(dx||dy);if(dx||dy){let speed=((keys.has('Shift')||touchKeys.has('sprint'))?235:175)*dt,len=Math.hypot(dx,dy);dx=dx/len*speed;dy=dy/len*speed;if(canStand(player.x+dx,player.y))player.x+=dx;if(canStand(player.x,player.y+dy))player.y+=dy;player.direction=dx<0?-1:dx>0?1:player.direction;}
  const z=areaIndex();if(z!==areaNow)updateUI();nearTarget=near();$('hint').style.display=nearTarget?'flex':'none';if(nearTarget)$('hint-text').textContent=nearTarget.type==='record'?(collected.has(z)?'Reler registro / responder':'Ler registro histórico'):'Conversar com a guia';
 }else{player.moving=false;$('hint').style.display='none';}
  camera+=(Math.max(0,Math.min(WORLD_W-W,player.x-W*.5))-camera)*Math.min(1,dt*6);draw();requestAnimationFrame(gameLoop);}
@@ -453,7 +580,7 @@ function gameLoop(t){
   if(keys.has('ArrowUp')||keys.has('w')||touchKeys.has('up'))dy--;
   if(keys.has('ArrowDown')||keys.has('s')||touchKeys.has('down'))dy++;
   player.moving=!!(dx||dy);
-  if(dx||dy){let speed=(keys.has('Shift')?235:175)*dt,len=Math.hypot(dx,dy);dx=dx/len*speed;dy=dy/len*speed;
+  if(dx||dy){let speed=((keys.has('Shift')||touchKeys.has('sprint'))?235:175)*dt,len=Math.hypot(dx,dy);dx=dx/len*speed;dy=dy/len*speed;
    if(canStand(player.x+dx,player.y))player.x+=dx;
    if(canStand(player.x,player.y+dy))player.y+=dy;
    player.direction=dx<0?-1:dx>0?1:player.direction;
@@ -555,17 +682,63 @@ function openEnd(){
  $('end-museum').onclick=openMuseum;$('end-map').onclick=closeModal;
 }
 function openHelp(){
- modal(`<div class="modal-eyebrow">Guia de jogo · Versão 0.2</div><h2>Como jogar</h2><p><strong>1. Explore:</strong> use WASD ou setas para andar. Segure Shift para correr.</p><p><strong>2. Investigue:</strong> encontre <strong>dois fragmentos dourados</strong> em cada região. Pressione E (ou Interagir no celular) ao se aproximar.</p><p><strong>3. Converse:</strong> encontre o guia de cada região e escolha opções de diálogo para conhecer pistas e curiosidades.</p><p><strong>4. Leia:</strong> com as pistas reunidas, abra o pergaminho central e descubra o registro histórico.</p><p><strong>5. Avance:</strong> complete desafios variados para liberar o caminho e acrescentar documentos ao museu.</p><p><strong>6. Consulte:</strong> I abre o diário; M abre o museu. Esc fecha janelas. O progresso é salvo automaticamente no navegador.</p><div class="quest-note">Não existe tempo limite nem penalidade por errar. Aprender faz parte da aventura!</div><div class="modal-actions"><button type="button" class="primary" id="help-ok">Começar a explorar →</button></div>`);
+ modal(`<div class="modal-eyebrow">Guia de jogo · Versão 0.2.1</div><h2>Como jogar</h2><p><strong>1. Explore:</strong> use WASD ou setas para andar. Segure Shift para correr.</p><p><strong>2. Investigue:</strong> encontre <strong>dois fragmentos dourados</strong> em cada região. Pressione E (ou Interagir no celular) ao se aproximar.</p><p><strong>3. Converse:</strong> encontre o guia de cada região e escolha opções de diálogo para conhecer pistas e curiosidades.</p><p><strong>4. Leia:</strong> com as pistas reunidas, abra o pergaminho central e descubra o registro histórico.</p><p><strong>5. Avance:</strong> complete desafios variados para liberar o caminho e acrescentar documentos ao museu.</p><p><strong>6. Consulte:</strong> I abre o diário; M abre o museu. Esc fecha janelas. O progresso é salvo automaticamente no navegador.</p><div class="quest-note">Não existe tempo limite nem penalidade por errar. Aprender faz parte da aventura!</div><div class="modal-actions"><button type="button" class="primary" id="help-ok">Começar a explorar →</button></div>`);
  $('help-ok').onclick=closeModal;
 }
 function interact(){if(!started||modalOpen)return;const p=near();if(!p)return;if(p.type==='record')openRecord(p.area);else if(p.type==='guide')openGuide(p.area);else collectClue(p.area,p.part);}
-function begin(){started=true;$('intro').style.display='none';canvas.focus();toast('◇ Encontre as duas pistas douradas');}
+function begin(){started=true;$('intro').style.display='none';document.querySelector('.game-board').classList.add('is-playing');canvas.focus();toast('◇ Encontre as duas pistas douradas');}
 // Novas ações e ajustes dos controles / salvamento
 $('museum-top').onclick=$('museum-side').onclick=openMuseum;
 $('sound-toggle').onclick=()=>{soundOn=!soundOn;save();updateUI();if(soundOn)sound('pick');};
 $('reset-btn').onclick=()=>{if(confirm('Deseja apagar todo o progresso desta jornada e recomeçar do início?')){collected.clear();solved.clear();cluesFound.clear();player.x=4.5*T;player.y=5.5*T;camera=0;save();closeModal();updateUI();toast('Jornada reiniciada');}};
 window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(modalOpen)return;if(k==='m'){e.preventDefault();if(started)openMuseum();}});
 // ==== FIM DA EXTENSÃO 0.2 ====
+
+// Tela cheia / rotação: browsers como iOS Safari podem não oferecer orientação forçada.
+const rotateStatus=$('rotate-status');
+function updateFullscreenLabel(){
+  const full=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  $('fullscreen-toggle').setAttribute('aria-label',full?'Sair da tela cheia':'Ativar tela cheia e tentar modo horizontal');
+  $('fullscreen-toggle').title=full?'Sair da tela cheia':'Tela cheia / tela horizontal';
+  $('fullscreen-toggle').querySelector('.fullscreen-icon').textContent=full?'⤢':'⛶';
+}
+async function toggleImmersive(){
+  const full=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  if(full){
+    try{if(document.exitFullscreen)await document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();}catch(err){}
+    updateFullscreenLabel();return;
+  }
+  let entered=false,locked=false;
+  try{
+    const root=document.documentElement;
+    if(root.requestFullscreen){await root.requestFullscreen({navigationUI:'hide'});entered=true;}
+    else if(root.webkitRequestFullscreen){await root.webkitRequestFullscreen();entered=true;}
+  }catch(err){}
+  try{
+    if(screen.orientation&&typeof screen.orientation.lock==='function'){
+      await screen.orientation.lock('landscape');locked=true;
+    }
+  }catch(err){}
+  updateFullscreenLabel();
+  if(window.matchMedia('(orientation: portrait)').matches){
+    rotateStatus.textContent=entered?'Tela cheia ativada. Se o celular não girou, desbloqueie a rotação e vire-o manualmente.':'Seu navegador não permite forçar o modo horizontal. Desbloqueie a rotação e vire o aparelho.';
+  }
+  if(!entered&&!locked&&started)toast('Gire o celular para o lado para aproveitar a tela.');
+}
+$('fullscreen-toggle').addEventListener('click',toggleImmersive);
+$('rotate-try').addEventListener('click',toggleImmersive);
+$('rotate-dismiss').addEventListener('click',()=>document.body.classList.add('portrait-dismissed'));
+window.matchMedia('(orientation: landscape)').addEventListener('change',e=>{
+  if(e.matches){document.body.classList.remove('portrait-dismissed');rotateStatus.textContent='Alguns navegadores não permitem forçar a orientação automaticamente.';}
+  keys.clear();touchKeys.clear();
+});
+document.addEventListener('fullscreenchange',updateFullscreenLabel);
+document.addEventListener('webkitfullscreenchange',updateFullscreenLabel);
+// Evita que a página role ou amplie por toque duplo enquanto o jogador move o personagem.
+document.querySelectorAll('.touch-button').forEach(b=>b.addEventListener('contextmenu',e=>e.preventDefault()));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();touchKeys.clear();save();}});
+window.addEventListener('pagehide',save);
+setInterval(()=>{if(started&&!modalOpen)save();},12000);
 
 load(); // preserve completed records even when the page is reopened
 if(!canStand(player.x,player.y)){player.x=4.5*T;player.y=5.5*T;}
