@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101e29" />
+  <title>Ecos da História 0.2 — Uma Jornada pela Memória</title>
+  <style>
+    :root { --bg:#0c1823; --bg2:#112634; --panel:#182b38; --line:rgba(232,204,145,.18); --ink:#faf2df; --muted:#bac6c8; --gold:#efc478; --teal:#80c8b6; --danger:#ffb5aa; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(ellipse at 15% 0%,#294354 0,transparent 46%),radial-gradient(ellipse at 95% 100%,#3a352c 0,transparent 48%),var(--bg); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+    button { font:inherit; cursor:pointer; }
+    button:focus-visible,a:focus-visible { outline:3px solid #f6dd9b; outline-offset:3px; }
+    .wrapper { max-width:1390px; margin:auto; padding:26px 20px 35px; }
+    .topline { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:18px; flex-wrap:wrap; }
+    .brand { display:flex; gap:14px; align-items:center; }
+    .brand-emblem { width:48px; height:48px; flex:none; display:grid; place-items:center; border-radius:14px; font-size:26px; border:1px solid #ddb36a70; background:linear-gradient(135deg,#594d31,#273d3c); box-shadow:0 5px 22px #0005; }
+    .eyebrow { margin:0 0 2px; text-transform:uppercase; font-size:11px; font-weight:850; color:var(--gold); letter-spacing:2.6px; }
+    h1 { font-family:Georgia,serif; font-size:clamp(24px,3vw,35px); letter-spacing:-.6px; margin:0; line-height:1.15; }
+    .subtitle { color:#b6cbcd; font-size:13px; margin:5px 0 0; }
+    .date-mark { border:1px solid var(--line); background:#162834; border-radius:999px; color:#e3d3ab; font-size:12px; font-weight:700; letter-spacing:.8px; padding:10px 15px; white-space:nowrap; }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) 305px; align-items:start; gap:19px; }
+    .game-board,.panel { background:linear-gradient(155deg,#1c3442,#142631); border:1px solid var(--line); border-radius:20px; box-shadow:0 18px 35px #020a1160; overflow:hidden; }
+    .board-top { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 16px; border-bottom:1px solid var(--line); background:rgba(6,13,21,.28); }
+    .location { display:flex; align-items:center; gap:10px; font-weight:750; font-size:13px; }
+    .location-dot { width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px #80c8b61b; }
+    .board-buttons { display:flex; gap:8px; }
+    .small-btn { color:var(--ink); border:1px solid #e6c99433; padding:8px 11px; border-radius:9px; background:#273e49; font-size:12px; font-weight:730; }
+    .small-btn:hover { background:#35505c; }
+    .canvas-wrap { position:relative; overflow:hidden; background:#314d3f; }
+    #game { display:block; width:100%; aspect-ratio:5/3; image-rendering:pixelated; outline:none; }
+    .canvas-hud { position:absolute; pointer-events:none; top:14px; left:14px; display:flex; gap:8px; }
+    .hud-pill { background:#13232cdd; border:1px solid #ffffff25; color:#fff7e6; border-radius:7px; font-size:12px; font-weight:800; padding:7px 10px; box-shadow:0 5px 15px #0004; }
+    .hint { position:absolute; bottom:15px; left:50%; transform:translateX(-50%); color:white; background:#132431e8; border:1px solid #f6d69987; border-radius:10px; display:none; align-items:center; gap:10px; max-width:95%; font-size:14px; font-weight:700; padding:10px 14px; text-align:center; box-shadow:0 7px 20px #0008; pointer-events:none; white-space:nowrap; }
+    .kbd { border-radius:5px; padding:3px 7px; background:#f3d38d;color:#1a2931; font-size:12px;font-weight:950; }
+    .intro { position:absolute; inset:0; z-index:5; background:linear-gradient(90deg,#07151de8 0%,#0c1b24bf 60%,#101c238c 100%); display:flex; align-items:center; justify-content:center; text-align:center; padding:20px; }
+    .intro-content { max-width:490px; }
+    .intro-icon { margin:0 auto 12px; width:62px;height:62px;display:grid;place-items:center; font-size:34px;border:1px solid #d6b77299;border-radius:15px;background:#b18a4e22; }
+    .intro h2 { font-family:Georgia,serif; font-size:clamp(26px,4.5vw,40px); line-height:1.14; margin:0 0 14px; }
+    .intro p { color:#e4e4d7; font-size:14px; line-height:1.65; margin:0 auto 22px; }
+    .primary { color:#182731; background:linear-gradient(180deg,#ffdb94,#e8b860); border:1px solid #f7dc9a; border-radius:11px; font-weight:900; padding:12px 20px; box-shadow:0 6px 0 #98733f,0 8px 20px #0008; }
+    .primary:hover { filter:brightness(1.05); transform:translateY(-1px); }
+    .primary:active { transform:translateY(3px); box-shadow:0 3px 0 #98733f; }
+    .secondary { color:#f5eaca; background:#243944; border:1px solid #c8b98b6b; border-radius:10px; font-weight:800; padding:11px 15px; }
+    .secondary:hover { background:#36505d; }
+    .board-foot { padding:13px 16px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; background:#152936; color:#bdcdcf; font-size:12px; }
+    .board-foot b { color:#f0dbac; }
+    .progress-track { display:flex; align-items:center; gap:10px; color:#f5ebd5;font-weight:750; }
+    .track { display:flex; gap:4px; }
+    .track i { display:block;width:22px;height:7px;background:#40535a;border-radius:3px; }
+    .track i.done { background:#e9c17b;box-shadow:0 0 8px #e9c17b44; }
+    .sidebar { display:grid; gap:15px; }
+    .panel { padding:20px; }
+    .panel-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px; }
+    .panel h2 { font:700 21px Georgia,serif; margin:0; }
+    .count { font-size:12px; color:#e8cf99; border:1px solid #c69c5e55; border-radius:40px; padding:4px 9px; }
+    .panel p { font-size:13px;line-height:1.6;color:#beccce;margin:0 0 15px; }
+    .chapter-list { list-style:none; margin:0;padding:0;display:grid;gap:8px; }
+    .chapter { display:flex;align-items:center;gap:10px;background:#132631aa;border:1px solid #ffffff12;border-radius:10px;padding:10px; }
+    .chapter .num { width:28px;height:28px; flex:none;border-radius:8px;display:grid;place-items:center;background:#364751;color:#d9dede;font-weight:900;font-size:12px; }
+    .chapter.current { border-color:#deba6a8c;background:#4a423522; }
+    .chapter.current .num { background:#b68a49;color:#171f24; }
+    .chapter.done .num { background:#3d8175;color:white; }
+    .chapter-text { min-width:0; }
+    .chapter-text strong { display:block;font-size:12px;line-height:1.3; }
+    .chapter-text span { display:block;color:#adbec0;font-size:11px; margin-top:3px; }
+    .inventory-btn { display:flex; justify-content:space-between;align-items:center; width:100%;margin-top:14px;border:1px solid #dcbb7f80; border-radius:10px;padding:12px 13px;color:#fce4b0;background:#51452e44;font-weight:850;text-align:left; }
+    .inventory-btn:hover { background:#77603b77; }
+    .help-list { display:grid; grid-template-columns:1fr 1fr;gap:8px; }
+    .help-item { display:flex;align-items:center;gap:8px;color:#cdd8d9;font-size:12px; }
+    .key { font-size:11px; border:1px solid #b1c1bd55; border-bottom-width:3px;border-radius:6px;padding:5px 6px; font-weight:800; color:#fff5df;white-space:nowrap; }
+    .reset { display:block;color:#d9c7a7;background:transparent;border:none;text-decoration:underline;text-underline-offset:3px;font-size:12px; margin:16px auto 0; }
+    .reset:hover { color:white; }
+    .touch { display:none; align-items:center;justify-content:space-between;padding:17px 20px;gap:20px;background:#0e222c; }
+    .dpad { display:grid;grid-template-columns:repeat(3,45px);grid-template-rows:repeat(2,45px);gap:6px; }
+    .touch-button { user-select:none;touch-action:none;display:grid;place-items:center; border:1px solid #c8d6ce5c; border-bottom-width:3px;border-radius:10px;background:#294454;color:#fff3dc;font-weight:900;font-size:21px; }
+    .touch-button:active,.touch-button.active { background:#597675; }
+    .touch-action { width:92px;height:56px;font-size:14px;background:#d6ab66;color:#162832; }
+    .touch-note { font-size:11px;color:#bfd0d0;margin-top:6px;text-align:center; }
+    .sources { margin-top:19px;border:1px solid #ffffff19;background:#12242da8;border-radius:14px;padding:15px 18px;font-size:12px;color:#bec8c8;line-height:1.65; }
+    .sources strong { color:#f0d79f; }
+    .sources a { color:#b8e2d3;text-underline-offset:2px; }
+    .sources-links { margin-top:7px;display:flex;flex-wrap:wrap;gap:5px 14px; }
+    .modal-root { position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:18px;background:#020a10ce;backdrop-filter:blur(5px); }
+    .modal-root.hidden { display:none; }
+    .modal { width:min(100%,590px);max-height:min(90vh,740px);overflow-y:auto;border:1px solid #dcc18a88;background:linear-gradient(160deg,#273c46,#162b37);box-shadow:0 32px 110px #000b;border-radius:18px;padding:26px;position:relative; }
+    .modal-close { position:absolute;top:15px;right:15px;width:33px;height:33px;color:white;background:#ffffff18;border:1px solid #ffffff27;border-radius:9px;font-size:19px; }
+    .modal-eyebrow { font-size:11px;font-weight:950;letter-spacing:2px;text-transform:uppercase;color:#ebc981;margin:3px 37px 9px 0; }
+    .modal h2 { font:700 clamp(25px,4vw,33px) Georgia,serif;margin:0 34px 14px 0;line-height:1.12; }
+    .modal p { font-size:14px;line-height:1.78;color:#dae2df;margin:0 0 13px; }
+    .modal blockquote { font:italic 16px/1.65 Georgia,serif;background:#ebc78012;border-left:3px solid #d6b476;margin:18px 0;padding:14px 18px;color:#f5e7c7; }
+    .modal-meta { display:flex;align-items:center;gap:8px; flex-wrap:wrap;margin-bottom:14px; }
+    .pill { font-size:11px;color:#dfd9c2;border:1px solid #dfc7945a;background:#5e5d4244;border-radius:30px;padding:5px 10px;font-weight:800; }
+    .modal-actions { display:flex;gap:11px;flex-wrap:wrap;margin-top:21px;align-items:center; }
+    .modal a { color:#bde8dc; }
+    .choices { display:grid;gap:10px;margin:20px 0; }
+    .choice { display:flex;align-items:center;text-align:left;gap:10px;border:1px solid #91b3b54f;background:#223c48;border-radius:11px;color:#fff7df;padding:13px;font-size:14px;font-weight:720; }
+    .choice:hover:not(:disabled) { border-color:#edc987; background:#34505a; }
+    .choice:disabled { opacity:.85;cursor:default; }
+    .choice .letter { width:26px;height:26px;display:grid;place-items:center;border:1px solid #e5c18099;border-radius:8px;color:#f5dca7;flex:none; }
+    .choice.right { background:#254d47;border-color:#7ccbb3; }
+    .choice.wrong { background:#5d3838;border-color:#df948c; }
+    .feedback { border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;background:#72562f70;color:#ffedc8;display:none; }
+    .feedback.visible { display:block; }
+    .feedback.success { background:#244c4777; color:#d4f8e6; }
+    .item-list { display:grid;gap:9px;margin:16px 0; }
+    .item { display:flex;align-items:center;gap:12px;width:100%;border-radius:10px;padding:13px;text-align:left;background:#27404b;border:1px solid #ffffff2b;color:#fff0d2; }
+    .item:hover { background:#345765; }
+    .item-icon { display:grid;place-items:center;width:35px;height:38px;flex:none;background:#9e753c;border-radius:6px;color:#fff;font-size:20px; }
+    .item strong { display:block;font-size:13px; }
+    .item small { display:block;color:#bdcaca;margin-top:5px; }
+    .empty-state { text-align:center;border:1px dashed #c4b68e4e;padding:30px 18px;border-radius:12px; }
+    .empty-state span { display:block;font-size:38px;margin-bottom:10px; }
+    .medals { display:flex; flex-wrap:wrap; gap:8px;margin:20px 0; }
+    .medals span { font-size:12px;color:#f0d8a8;background:#705c3c77;border:1px solid #e9cb9580;border-radius:9px;padding:9px; }
+    @media(max-width:1040px) { .layout { grid-template-columns:minmax(0,1fr); } .sidebar { grid-template-columns:1fr 1fr; } }
+    @media(max-width:700px) { .wrapper { padding:14px 10px 24px; } .brand-emblem { width:41px;height:41px; } .topline { margin-bottom:14px; }.subtitle { font-size:12px; }.date-mark { display:none; } .game-board,.panel { border-radius:13px; }.layout { gap:12px; }.sidebar { grid-template-columns:1fr; }.panel { padding:16px; }.touch { display:flex; }.hint { bottom:9px;padding:7px 10px;font-size:11px; }.hud-pill { font-size:10px; }.board-top { padding:10px; }.location { font-size:12px; }.board-foot { font-size:11px; }.modal { padding:21px; }.intro p { font-size:12px; }.intro h2 { font-size:25px; }.intro-icon { width:44px;height:44px;font-size:25px; } }
+    @media(max-width:410px) { .touch { padding:12px; }.dpad { grid-template-columns:repeat(3,41px);grid-template-rows:repeat(2,41px); }.touch-action { width:78px; } .small-btn { padding:7px 9px;font-size:11px; }.intro { padding:12px; } .intro p { line-height:1.45; } }
+
+/* Versão 0.2 — novos sistemas, personagens e identidade visual */
+:root { --gold:#f4cc85; --teal:#98decb; }
+body { background:radial-gradient(ellipse at 3% 7%,#284945 0,transparent 35%),radial-gradient(ellipse at 91% 40%,#51442e55 0,transparent 45%),#0b1925; }
+.brand-emblem { position:relative; background:linear-gradient(140deg,#bc884a,#345a53);font-size:25px; }
+.brand-emblem::after {content:' ';position:absolute;inset:-4px;border:1px solid #f1c98755;border-radius:18px; }
+.game-board,.panel {box-shadow:0 22px 60px #0005,0 1px 0 #ffffff0a inset; }
+.board-top {background:linear-gradient(90deg,#172e39,#1f3a43);}
+.canvas-wrap {background:#3a6b51;}
+#game { aspect-ratio:5/3; }
+.hud-pill {background:#102832eb;border-color:#f4d89b45;letter-spacing:.2px;}
+.intro {background:radial-gradient(ellipse at 74% 30%,#4c705d80 0,transparent 50%),linear-gradient(110deg,#061823f0,#112d37db);}
+.intro-icon {background:linear-gradient(145deg,#8f6936,#243d42);box-shadow:0 0 0 6px #f4d0890c,0 10px 45px #0008;}
+.intro h2 {font-size:clamp(27px,4vw,44px);}
+.intro .intro-kicker {display:inline-flex;margin-bottom:15px;border:1px solid #f7d58d70;padding:6px 11px;border-radius:99px;background:#654f3452;color:#ffdfa3;font-size:11px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
+.intro .intro-bullets {font-size:12px;color:#dfd5bb;margin:0 auto 20px;}
+.statline {display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.statline span {font-size:11px;color:#bdd9d2;background:#0f273366;border:1px solid #ffffff16;border-radius:20px;padding:6px 9px;}
+.objective-panel {border-color:#d6bd7f66;background:linear-gradient(150deg,#2c3838,#192f39);position:relative;overflow:hidden;}
+.objective-panel::before {content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:linear-gradient(#f0c87d,#66bca8);}
+.objective-panel .eyebrow {font-size:10px;letter-spacing:1.5px;}
+.objective-title {color:#f8e6b8;font:bold 19px Georgia,serif;margin:8px 0;}
+.objective-panel p {margin-bottom:8px;}
+.objective-progress {display:flex;gap:5px;align-items:center;margin-top:14px;}
+.objective-progress i {display:block;width:25px;height:7px;border-radius:20px;background:#53666b;}
+.objective-progress i.done {background:#e9bf73;box-shadow:0 0 8px #efc78044;}
+.museum-btn {display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;border:1px solid #e8cb866c;color:#f9eac7;background:#554b334f;border-radius:10px;padding:12px;margin-top:10px;font-weight:800;text-align:left;}
+.museum-btn:hover {background:#846c4163;}
+.museum-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:15px 0;}
+.museum-card {border:1px solid #e6cc9160;background:linear-gradient(145deg,#344f51,#243a43);border-radius:13px;padding:15px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;position:relative;}
+.museum-card.locked {opacity:.55;filter:grayscale(.6);}
+.museum-card .icon {font-size:28px;background:#d9b66e33;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;}
+.museum-card strong {display:block;color:#faeacd;font:700 17px Georgia,serif;margin:7px 0 4px;}
+.museum-card small {color:#ceddd7;line-height:1.4;}
+.quest-note {background:#edcc8530;border:1px solid #e9c8805c;padding:12px 14px;border-radius:10px;color:#f9e6ba;font-size:13px;line-height:1.55;}
+.dialogue-head {display:flex;gap:15px;align-items:center;margin:10px 0 18px;}
+.portrait {width:80px;height:90px;flex:none;border-radius:13px;display:grid;place-items:center;font-size:38px;background:linear-gradient(145deg,var(--portrait,#af8656),#213943);border:1px solid #ecc88975;box-shadow:inset 0 -8px 18px #0004;}
+.dialogue-head h2 {margin-bottom:5px;}
+.dialogue-choice {display:flex;width:100%;text-align:left;border:1px solid #f5cb8257;border-radius:11px;padding:12px 14px;margin-top:8px;background:#324950;color:#fff2d6;gap:9px;font-weight:720;}
+.dialogue-choice:hover {background:#405b60;border-color:#f9d990;}
+.dialogue-box {border-left:3px solid #efc67d;padding:12px 15px;background:#101f2a75;border-radius:0 10px 10px 0;margin:16px 0;line-height:1.8;color:#ede5d5;font-size:14px;}
+.toast {position:absolute;left:50%;top:72px;transform:translate(-50%,-10px);z-index:4;min-width:240px;max-width:90%;text-align:center;background:#10272bea;border:1px solid #f2cd8290;border-radius:11px;padding:11px 16px;color:#fff1ce;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;font-size:13px;font-weight:800;box-shadow:0 9px 30px #0008;}
+.toast.active {opacity:1;transform:translate(-50%,0);}
+.choice.selected {border-color:#f3cc7e;background:#6e603c88;}
+.order-list {display:grid;gap:8px;margin:18px 0;}
+.order-choice {text-align:left;border:1px solid #f6d38c50;border-radius:11px;background:#304950;color:#f9edda;padding:12px 14px;font-size:13px;font-weight:750;}
+.order-choice:not(:disabled):hover {border-color:#f1d193;background:#465d5c;}
+.order-choice:disabled {opacity:.46;cursor:default;}
+.chip-row {display:flex;gap:7px;flex-wrap:wrap;min-height:40px;align-items:center;margin-top:8px;}
+.chip {border:1px solid #e9cb838b;background:#b08d4c47;border-radius:8px;padding:7px 10px;font-size:12px;color:#ffebba;font-weight:800;}
+.chip button {background:none;border:0;color:#fff4d1;margin-left:7px;padding:0;font-weight:900;}
+.success-banner {margin:15px 0;border:1px solid #7edab7a1;background:#2b584a9c;padding:12px;border-radius:11px;color:#d9ffeb;line-height:1.6;font-size:13px;}
+.hud-corner {position:absolute;top:15px;right:15px;background:#102832d9;border:1px solid #fff4cc3d;color:#ffe5af;font-weight:850;font-size:11px;border-radius:8px;padding:8px 10px;pointer-events:none;}
+#sound-toggle[aria-pressed="false"] {color:#c3b9a6;}
+@media(max-width:700px) { .hud-corner {top:49px;right:8px;font-size:10px;padding:5px 7px;} .toast {top:80px;font-size:11px;} .dialogue-head .portrait {width:64px;height:72px;}.board-buttons {gap:4px;}.board-buttons .small-btn {padding:7px 8px;} .statline {display:none;} }
+@media(prefers-reduced-motion: reduce) { .toast {transition:none;} }
+
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <header class="topline">
+    <div class="brand"><span class="brand-emblem" aria-hidden="true">✦</span><div><div class="eyebrow">Uma aventura educativa</div><h1>Ecos da História</h1><p class="subtitle">Uma jornada pela memória afro-brasileira</p></div></div>
+    <span class="date-mark">VERSÃO 0.2 · 20 DE NOVEMBRO</span>
+  </header>
+  <main class="layout">
+    <section class="game-board" aria-label="Jogo">
+      <div class="board-top"><div class="location"><i class="location-dot"></i><span id="zone-name">Bosque da Memória</span></div><div class="board-buttons"><button class="small-btn" id="inventory-top" type="button">▤ Inventário</button><button class="small-btn" id="museum-top" type="button">♜ Museu</button><button class="small-btn" id="sound-toggle" aria-pressed="true" type="button" title="Alternar sons">♫</button><button class="small-btn" id="help-top" type="button">? Ajuda</button></div></div>
+      <div class="canvas-wrap">
+        <canvas id="game" width="960" height="576" tabindex="0" aria-label="Mapa do jogo: use WASD ou setas para se mover e E para interagir"></canvas>
+        <div class="canvas-hud"><span class="hud-pill" id="hud-progress">✦ Memórias 0/5</span><span class="hud-pill" id="hud-area">01 / 05</span></div><div class="hud-corner" id="clue-hud">◇ Pistas 0/2</div><div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <div class="hint" id="hint"><span class="kbd">E</span> <span id="hint-text">Ler registro histórico</span></div>
+        <div class="intro" id="intro">
+          <div class="intro-content"><span class="intro-kicker">✦ Nova jornada · Versão 0.2</span><div class="intro-icon">✦</div><p class="eyebrow">O conhecimento abre caminhos</p><h2>Há histórias que merecem ser ouvidas.</h2><p>Explore cinco cenários, converse com moradores fictícios, encontre pistas, revele memórias de personalidades negras e complete desafios para montar uma exposição.</p><p class="intro-bullets">✧ 5 regiões &nbsp; ✧ 10 pistas &nbsp; ✧ 5 desafios &nbsp; ✧ Museu final</p><button type="button" class="primary" id="start-btn">Iniciar jornada →</button></div>
+        </div>
+      </div>
+      <div class="touch" aria-label="Controles para tela sensível ao toque">
+        <div><div class="dpad"><span></span><button type="button" class="touch-button" data-dir="up" aria-label="Para cima">↑</button><span></span><button type="button" class="touch-button" data-dir="left" aria-label="Para esquerda">←</button><button type="button" class="touch-button" data-dir="down" aria-label="Para baixo">↓</button><button type="button" class="touch-button" data-dir="right" aria-label="Para direita">→</button></div><div class="touch-note">Mover personagem</div></div>
+        <div><button type="button" class="touch-button touch-action" id="touch-interact">Interagir</button><div class="touch-note">Pegar / conversar</div></div>
+      </div>
+      <div class="board-foot"><span><b>WASD</b> / setas: mover &nbsp; · &nbsp; <b>E</b>: interagir &nbsp; · &nbsp; <b>I</b>: diário &nbsp; · &nbsp; <b>M</b>: museu</span><div class="progress-track"><div class="track" id="track"></div><span id="foot-progress">0 de 5</span></div></div>
+    </section>
+    <aside class="sidebar">
+      <section class="panel objective-panel"><div class="eyebrow">✦ Missão atual</div><div class="objective-title" id="objective-title">Encontre as pistas</div><p id="objective-desc">Procure os fragmentos brilhantes e descubra o próximo registro.</p><div class="objective-progress" id="objective-dots"></div></section>
+      <section class="panel"><div class="panel-heading"><h2>Seu caminho</h2><span class="count" id="completed-label">0/5 concluídos</span></div><p>Cada memória conta uma parte da história. Leia, responda e avance pelo mapa.</p><ol id="chapters" class="chapter-list"></ol><button type="button" class="inventory-btn" id="inventory-side"><span>▤ &nbsp; Diário de memórias</span><span id="inventory-number">0 registros →</span></button><button type="button" class="museum-btn" id="museum-side"><span>♜ &nbsp; Visitar museu virtual</span><span id="museum-number">0 / 5 →</span></button></section>
+      <section class="panel"><h2 style="margin-bottom:14px">Como jogar</h2><div class="help-list"><div class="help-item"><span class="key">W A S D</span> Mover</div><div class="help-item"><span class="key">↑ ← ↓ →</span> Mover</div><div class="help-item"><span class="key">E</span> Interagir</div><div class="help-item"><span class="key">I</span> Inventário</div><div class="help-item"><span class="key">Shift</span> Acelerar</div><div class="help-item"><span class="key">Esc</span> Fechar</div><div class="help-item"><span class="key">M</span> Museu</div></div><button class="reset" id="reset-btn" type="button">Recomeçar a jornada</button></section>
+    </aside>
+  </main>
+  <footer class="sources"><strong>Sobre o conteúdo histórico:</strong> os cenários são simbólicos, não representações fiéis de lugares históricos. Os NPCs (Lia, Bia, Nara, André e Rosa) são personagens fictícios; suas falas não são citações históricas. Os textos foram resumidos para fins educativos. Consulte as fontes para saber mais.
+    <div class="sources-links"><a href="https://www.gov.br/palmares/pt-br/assuntos/noticias/zumbi-dos-palmares" target="_blank" rel="noopener">Fundação Cultural Palmares — Zumbi</a><a href="https://www.gov.br/mulheres/pt-br/central-de-conteudos/noticias/2026/maio/conheca-cinco-mulheres-negras-que-lutaram-pela-abolicao-da-escravatura" target="_blank" rel="noopener">Ministério das Mulheres — Dandara</a><a href="https://www.ce.gov.br/sps/2020/07/28/tereza-de-benguela/" target="_blank" rel="noopener">Governo do Ceará — Tereza</a><a href="https://legis.senado.leg.br/norma/26345703" target="_blank" rel="noopener">Senado — Luiz Gama</a><a href="https://bndigital.bn.gov.br/dossies/literatura-matriz-afro-brasileira/obras-no-catalogo-da-biblioteca-nacional/carolina-maria-de-jesus-1914/" target="_blank" rel="noopener">Biblioteca Nacional — Carolina</a></div>
+  </footer>
+</div>
+<div id="modal-root" class="modal-root hidden" role="dialog" aria-modal="true" aria-label="Conteúdo do jogo"><section class="modal" id="modal"><button class="modal-close" id="modal-close" aria-label="Fechar janela" type="button">×</button><div id="modal-content"></div></section></div>
+<script>
+(()=>{'use strict';
+const AREAS=[
+ {name:'Bosque da Memória',short:'Memória e resistência',ground:['#4d735a','#557a60','#5e8367'],accent:'#e9bf72',structure:'árvore ancestral',record:{title:'Zumbi dos Palmares',period:'Século XVII · Alagoas',symbol:'✦',text:'Zumbi dos Palmares tornou-se um dos maiores símbolos da resistência à escravidão no Brasil. Ele esteve entre as lideranças do Quilombo dos Palmares, comunidade que resistiu a ataques coloniais na região da atual Alagoas.',context:'O 20 de novembro lembra a morte de Zumbi, em 1695, e é uma data dedicada à reflexão sobre a história, a cultura e a luta da população negra por direitos.',question:'O que o Quilombo dos Palmares representa na história do Brasil?',options:['Um palácio construído pela Coroa portuguesa.','Uma importante experiência de comunidade e resistência à escravidão.','Uma escola criada após a abolição.'],answer:1,explain:'Palmares reuniu comunidades que organizaram sua vida e resistiram ao sistema escravista.',hint:'Releia o trecho sobre Palmares e a resistência.',source:'https://www.gov.br/palmares/pt-br/assuntos/noticias/zumbi-dos-palmares'}},
+ {name:'Pátio da Coragem',short:'Mulheres na resistência',ground:['#63816d','#6c8c76','#77977c'],accent:'#eac382',structure:'praça da coragem',record:{title:'Dandara dos Palmares',period:'Século XVII · Palmares',symbol:'✷',text:'Dandara dos Palmares é lembrada como liderança negra ligada à resistência no Quilombo dos Palmares. Sua memória destaca a participação das mulheres na luta contra a escravidão.',context:'Muitas trajetórias de mulheres negras receberam menos espaço nos registros escritos. Reconhecê-las amplia nossa compreensão da história e de quem ajudou a construí-la.',question:'O que a trajetória de Dandara nos ajuda a reconhecer?',options:['A importância das mulheres negras na resistência à escravidão.','Que apenas homens participaram da resistência.','Que os quilombos não tinham lideranças.'],answer:0,explain:'A lembrança de Dandara contribui para reconhecer o protagonismo histórico das mulheres negras.',hint:'Pense em quem teve suas histórias pouco contadas.',source:'https://www.gov.br/mulheres/pt-br/central-de-conteudos/noticias/2026/maio/conheca-cinco-mulheres-negras-que-lutaram-pela-abolicao-da-escravatura'}},
+ {name:'Jardins da Liberdade',short:'Organização quilombola',ground:['#507969','#5d8570','#6d9175'],accent:'#baddaa',structure:'horta comunitária',record:{title:'Tereza de Benguela',period:'Século XVIII · Mato Grosso',symbol:'❀',text:'Tereza de Benguela liderou o Quilombo do Quariterê, também conhecido como Quilombo do Piolho, na região do atual Mato Grosso. A comunidade reuniu pessoas negras e indígenas e desenvolveu formas próprias de organização.',context:'A história de Tereza mostra que a resistência também envolveu trabalho coletivo, produção de alimentos e formas de organizar a comunidade.',question:'Qual comunidade foi liderada por Tereza de Benguela?',options:['Quilombo do Quariterê.','Quilombo dos Palmares.','Vila de Canudos.'],answer:0,explain:'Tereza liderou o Quilombo do Quariterê, referência da resistência na região do Mato Grosso.',hint:'O nome do quilombo aparece no registro.',source:'https://www.ce.gov.br/sps/2020/07/28/tereza-de-benguela/'}},
+ {name:'Praça da Justiça',short:'A luta por direitos',ground:['#81836a','#8e8b71','#999277'],accent:'#e2c69d',structure:'colunas da justiça',record:{title:'Luiz Gama',period:'Século XIX · Brasil',symbol:'⚖',text:'Luiz Gama foi poeta, jornalista e um importante defensor da abolição da escravidão. Usou seus conhecimentos jurídicos para atuar em defesa da liberdade de pessoas escravizadas.',context:'Em 2018, Luiz Gama foi declarado Patrono da Abolição da Escravidão do Brasil. Sua trajetória mostra a importância da palavra, do direito e da ação coletiva para transformar a sociedade.',question:'Qual foi uma das formas de atuação de Luiz Gama?',options:['Promover a escravidão por meio de leis.','Proibir a circulação de jornais.','Atuar juridicamente em defesa da liberdade de pessoas escravizadas.'],answer:2,explain:'Luiz Gama utilizou o direito e a comunicação na luta abolicionista.',hint:'Releia o que Luiz Gama fazia com seus conhecimentos jurídicos.',source:'https://legis.senado.leg.br/norma/26345703'}},
+ {name:'Biblioteca das Vozes',short:'Literatura e memória',ground:['#617b7c','#6f8886','#7a9390'],accent:'#ead399',structure:'biblioteca das vozes',record:{title:'Carolina Maria de Jesus',period:'Século XX · São Paulo',symbol:'✎',text:'Carolina Maria de Jesus foi uma escritora brasileira que registrou experiências do cotidiano e desigualdades sociais. Seu livro Quarto de Despejo, publicado em 1960, tornou sua escrita conhecida em todo o país.',context:'Seus textos mostram a força da literatura como registro de experiências e como forma de dar visibilidade a vozes que muitas vezes foram ignoradas.',question:'Por que a obra de Carolina Maria de Jesus é importante?',options:['Porque apagou relatos sobre a vida nas cidades.','Porque registrou experiências de vida e desigualdades sociais.','Porque foi escrita exclusivamente para a nobreza colonial.'],answer:1,explain:'Sua escrita ajudou a ampliar as vozes presentes na literatura e na memória brasileiras.',hint:'Pense no que a autora registrou sobre o cotidiano.',source:'https://bndigital.bn.gov.br/dossies/literatura-matriz-afro-brasileira/obras-no-catalogo-da-biblioteca-nacional/carolina-maria-de-jesus-1914/'}}
+];
+const $=id=>document.getElementById(id);
+const canvas=$('game'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+const W=960,H=576,T=48,COLS=16,ROWS=12,ROOM_W=COLS*T,WORLD_W=ROOM_W*AREAS.length;
+const K='ecos-da-historia-v1';
+let collected=new Set(), solved=new Set(), started=false, modalOpen=false, camera=0,last=0,elapsed=0,nearTarget=null,areaNow=0;
+const keys=new Set(),touchKeys=new Set();
+const player={x:4.5*T,y:5.5*T,r:13,direction:1,moving:false};
+function save(){try{localStorage.setItem(K,JSON.stringify({collected:[...collected],solved:[...solved],x:player.x,y:player.y}));}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(K)||'null');if(!s)return;collected=new Set((s.collected||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<5));solved=new Set((s.solved||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<5));if(typeof s.x==='number' && typeof s.y==='number' && Number.isFinite(s.x)&&Number.isFinite(s.y)){player.x=Math.max(72,Math.min(WORLD_W-72,s.x));player.y=Math.max(72,Math.min(H-72,s.y));}}catch(e){}}
+const decorations=[];
+const occupied=new Set();
+const stoneTypes=['tree','tree','bush','rock','flower'];
+for(let z=0;z<AREAS.length;z++){
+ const places=[[3,2],[4,2],[7,2],[9,3],[13,2],[12,8],[8,9],[3,9],[5,9],[13,9],[2,4],[13,4],[7,8]];
+ for(let j=0;j<places.length;j++){let [x,y]=places[j],type=stoneTypes[(z*3+j*7)%stoneTypes.length];if(x===5&&y===9) type='flower';if(type!=='flower')occupied.add((z*COLS+x)+','+y);decorations.push({x:z*COLS+x,y,type});}
+}
+function hash(x,y){let n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);}
+function gateOpen(from){return solved.has(from);}
+function blockedTile(tx,ty){if(tx<0||tx>=COLS*AREAS.length||ty<0||ty>=ROWS)return true; if(ty===0||ty===ROWS-1)return true;let z=Math.floor(tx/COLS),lx=tx%COLS;if(lx===0){if(z===0)return true;return !(ty===5||ty===6) || !gateOpen(z-1);}if(lx===COLS-1){if(z===AREAS.length-1)return true;return !(ty===5||ty===6) || !gateOpen(z);}return occupied.has(tx+','+ty);}
+function canStand(x,y){const r=player.r;for(const px of [x-r,x+r])for(const py of [y-r,y+r])if(blockedTile(Math.floor(px/T),Math.floor(py/T)))return false;return true;}
+function areaIndex(){return Math.max(0,Math.min(AREAS.length-1,Math.floor(player.x/ROOM_W)));}
+function recordPos(i){return {x:(i*COLS+11.5)*T,y:5.5*T};}
+function guidePos(i){return {x:(i*COLS+5.5)*T,y:8.5*T};}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+function near(){let z=areaIndex(),a=recordPos(z),b=guidePos(z);if(dist(player,a)<91)return {type:'record',area:z};if(dist(player,b)<76)return {type:'guide',area:z};return null;}
+function updateUI(){areaNow=areaIndex();$('zone-name').textContent=AREAS[areaNow].name;$('hud-progress').textContent='✦ Memórias '+collected.size+'/5';$('hud-area').textContent=String(areaNow+1).padStart(2,'0')+' / 05';$('completed-label').textContent=solved.size+'/5 concluídos';$('inventory-number').textContent=collected.size+' registros →';$('foot-progress').textContent=solved.size+' de 5';$('track').innerHTML=AREAS.map((_,i)=>'<i class="'+(solved.has(i)?'done':'')+'"></i>').join('');$('chapters').innerHTML=AREAS.map((a,i)=>{let state=solved.has(i)?'done':i===areaNow?'current':'';let subtitle=solved.has(i)?'✓ Desafio concluído':i<=solved.size?'Disponível para explorar':'Aguardando desbloqueio';return `<li class="chapter ${state}"><span class="num">${solved.has(i)?'✓':String(i+1).padStart(2,'0')}</span><span class="chapter-text"><strong>${a.name}</strong><span>${subtitle}</span></span></li>`;}).join('');}
+function rect(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.ceil(w),Math.ceil(h));}
+function ellipse(x,y,rx,ry,c){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();}
+function textCanvas(s,x,y,sz=15,col='#faf2db',align='center'){ctx.fillStyle='#0b1e1fae';ctx.font=`900 ${sz}px system-ui`;ctx.textAlign=align;ctx.fillText(s,x+1,y+2);ctx.fillStyle=col;ctx.fillText(s,x,y);}
+function drawTile(tx,ty){let z=Math.floor(tx/COLS),a=AREAS[z],x=tx*T-camera,y=ty*T,v=hash(tx,ty);rect(x,y,T,T,a.ground[v<.33?0:v<.68?1:2]);if(ty===5||ty===6){rect(x,y,T,T,z===3?'#bcaa83':z===4?'#aeb5a0':'#b1aa7e');if(v>.55)rect(x+6,y+13,13,3,'#ffffff14');if(v<.22)rect(x+24,y+33,11,2,'#5a634b4d');} else {if(v>.67){rect(x+8,y+9,3,5,'#cadf974f');rect(x+15,y+16,3,4,'#d2eda148');}if(v<.2){ellipse(x+34,y+36,3,2,'#e8dca084');ellipse(x+27,y+31,2,2,'#f7d2a178');}}}
+function drawWall(tx,ty){let z=Math.floor(tx/COLS),x=tx*T-camera,y=ty*T; if(ty===0||ty===ROWS-1){rect(x,y,T,T,'#244a3e');rect(x+2,y+2,T-4,14,'#38624c');rect(x+3,y+17,T-6,11,'#345741');rect(x+7,y+30,34,9,'#2a4839');ellipse(x+24,y+15,29,18,z===4?'#567b69':'#4d7057');ellipse(x+13,y+14,14,15,'#67906c');ellipse(x+34,y+10,13,13,'#6b916f');return;}
+ const lx=tx%COLS;const gate=(ty===5||ty===6)&& ((lx===15&&z<4)||(lx===0&&z>0));const open=gate && (lx===15?gateOpen(z):gateOpen(z-1));if(open){rect(x,y,T,T,AREAS[z].ground[1]);rect(x+3,y,T-6,T,'#a0a283');rect(x+7,y+8,T-14,T-16,'#cab98a');return;}
+ if(gate){rect(x,y,T,T,'#495954');rect(x+3,y+4,T-6,T-8,'#7e7964');for(let i=8;i<T;i+=12)rect(x+i,y+5,5,T-10,'#2c383a');if(ty===5){rect(x+13,y+20,23,22,'#ebc478');rect(x+17,y+16,15,16,'#e7c888');rect(x+19,y+24,11,11,'#7c5e31');}return;}
+ rect(x,y,T,T,'#2e433e');rect(x+3,y+3,T-6,10,'#668373');rect(x+5,y+16,T-10,26,'#405c4d');rect(x+11,y+20,11,18,'#718677');
+}
+function drawDecor(d){const x=(d.x+.5)*T-camera,y=(d.y+.5)*T;if(x<-75||x>W+75)return;ellipse(x,y+18,18,7,'#14281b67');if(d.type==='tree'){rect(x-6,y-14,12,38,'#725239');rect(x-9,y+7,6,10,'#866240');ellipse(x,y-15,25,22,'#315947');ellipse(x-13,y-25,17,17,'#4f7854');ellipse(x+14,y-24,17,18,'#5c855b');ellipse(x,y-35,17,15,'#6d9463');rect(x-13,y-26,4,5,'#8daa6c');}
+else if(d.type==='bush'){ellipse(x,y+9,22,12,'#315a43');ellipse(x-10,y+3,14,14,'#4e7c59');ellipse(x+9,y-2,13,16,'#5d875f');ellipse(x,y-8,12,12,'#6c9766');}
+else if(d.type==='rock'){ellipse(x,y+9,19,10,'#303e3e');ctx.fillStyle='#778784';ctx.beginPath();ctx.moveTo(x-16,y+8);ctx.lineTo(x-9,y-8);ctx.lineTo(x+7,y-11);ctx.lineTo(x+19,y+5);ctx.lineTo(x+14,y+14);ctx.lineTo(x-12,y+14);ctx.fill();rect(x-5,y-8,13,4,'#b2bab0');}
+else{rect(x-1,y-2,3,11,'#2e6841');ellipse(x,y-9,5,5,'#e7bf79');ellipse(x-5,y-7,4,4,'#e7cf95');ellipse(x+5,y-7,4,4,'#d88f91');ellipse(x,y-5,3,3,'#fff1ba');}}
+function landmark(z){const center=z*ROOM_W+10*T-camera;if(center<-180||center>W+180)return;const y=147;ctx.save();if(z===0){ellipse(center,y+53,96,23,'#19382364');rect(center-9,y-18,18,80,'#674c32');ellipse(center,y-45,79,57,'#365b43');ellipse(center-34,y-53,42,40,'#517c52');ellipse(center+39,y-67,46,40,'#5d8a59');ellipse(center,y-93,44,40,'#6d9865');textCanvas('ÁRVORE DA MEMÓRIA',center,y+95,12,'#ffe1ab');}
+else if(z===1){rect(center-80,y+49,160,16,'#c6b58b');rect(center-65,y-20,18,70,'#d3c6a1');rect(center+47,y-20,18,70,'#d3c6a1');rect(center-86,y-35,172,18,'#e1c797');rect(center-20,y-68,40,33,'#c18b5c');ellipse(center,y-68,11,11,'#eec882');textCanvas('PÁTIO DA CORAGEM',center,y+95,12,'#ffedc8');}
+else if(z===2){for(let i=0;i<4;i++){rect(center-90+i*48,y-19,39,85,i%2?'#8a6443':'#9b714a');for(let j=0;j<4;j++){ellipse(center-76+i*48,y-11+j*19,7,6,i%2?'#87b36a':'#a6d173');}}textCanvas('JARDIM COLETIVO',center,y+97,12,'#f4ecd2');}
+else if(z===3){rect(center-95,y+44,190,17,'#bdaf89');for(let i=0;i<4;i++){rect(center-74+i*45,y-25,19,70,'#d6c7a0');rect(center-80+i*45,y-32,31,9,'#e5d5ae');}rect(center-102,y-47,204,14,'#ded0aa');textCanvas('PRAÇA DA JUSTIÇA',center,y+96,12,'#f4e5c4');}
+else{rect(center-98,y-56,196,125,'#c4aa78');rect(center-88,y-45,176,109,'#5c7473');for(let i=0;i<5;i++){rect(center-77+i*32,y-32,23,58,i%2?'#a3674d':'#9c8156');rect(center-75+i*32,y-13,5,31,'#e5ba87');}rect(center-17,y+27,34,38,'#d7c399');rect(center-6,y+32,12,32,'#4c5a53');textCanvas('BIBLIOTECA DAS VOZES',center,y+100,12,'#fff0cd');}ctx.restore();}
+function drawGuide(z){let p=guidePos(z),x=p.x-camera,y=p.y;if(x<-40||x>W+40)return;ellipse(x,y+22,16,6,'#051b197d');rect(x-12,y-8,24,29,z===3?'#5c6c92':'#c48b55');rect(x-5,y-29,10,7,'#40312c');rect(x-12,y-31,24,23,'#744b30');rect(x-11,y-29,22,18,z===4?'#a9694a':'#9e633f');rect(x-13,y-34,26,10,'#252830');rect(x-11,y-24,5,7,'#252830');rect(x-5,y-16,3,2,'#262622');rect(x+6,y-16,3,2,'#262622');rect(x-9,y+20,7,9,'#242d39');rect(x+2,y+20,7,9,'#242d39');textCanvas('GUIA',x,y-43,11,'#fff1cf');}
+function drawRecord(z){let p=recordPos(z),x=p.x-camera,y=p.y;if(x<-60||x>W+60)return;const got=collected.has(z),done=solved.has(z),a=AREAS[z];ellipse(x,y+23,26,9,'#0d231e90');rect(x-24,y+9,48,21,'#5e6260');rect(x-19,y+6,38,6,'#b5aa86');rect(x-27,y+26,54,5,'#313d39');ctx.save();ctx.globalAlpha=.22+.11*Math.sin(elapsed*3);ellipse(x,y-5,37,37,done?'#77d5b5':'#f2d285');ctx.restore();const bob=Math.sin(elapsed*2.5+z)*3;ctx.save();ctx.translate(x,y-13+bob);ctx.rotate(Math.sin(elapsed*1.5+z)*.06);rect(-15,-15,30,29,got?'#d4c6a4':'#f6e3b4');rect(-10,-18,22,5,got?'#f0e0ba':'#fff0c7');for(let j=0;j<3;j++)rect(-9,-8+j*7,18-j*3,2,'#927b59');ctx.restore();if(done)textCanvas('✓',x,y-45,20,'#a5f6c5');else if(!got)textCanvas('✦',x,y-44,18,a.accent);else textCanvas('!',x,y-44,18,'#ffefb4');}
+function drawPlayer(){let x=player.x-camera,y=player.y;const moving=player.moving,step=moving?Math.sin(elapsed*13)*3:0;ellipse(x,y+19,17,6,'#09201890');rect(x-10,y+3,8,17+step,'#253949');rect(x+2,y+3,8,17-step,'#293c4c');rect(x-12,y-8,24,20,'#e4af65');rect(x-16,y-5,6,12,'#8f5535');rect(x+10,y-5,6,12,'#8f5535');rect(x-9,y-28,18,21,'#a56b46');rect(x-10,y-31,20,11,'#262a2a');rect(x-12,y-25,5,9,'#2b2b2c');rect(x+6,y-25,4,9,'#2b2b2c');rect(x-5,y-15,3,3,'#1e2c29');rect(x+3,y-15,3,3,'#1e2c29');rect(x+7,y-7,8,5,'#b85844');rect(x-10,y+9,20,3,'#3e574b');}
+function draw(){rect(0,0,W,H,'#355746');const a=Math.floor(camera/T)-1,b=Math.ceil((camera+W)/T)+1;for(let tx=Math.max(0,a);tx<Math.min(COLS*AREAS.length,b);tx++)for(let y=0;y<ROWS;y++)drawTile(tx,y);
+for(let z=Math.max(0,Math.floor(camera/ROOM_W)-1);z<=Math.min(4,Math.floor((camera+W)/ROOM_W)+1);z++)landmark(z);
+for(let tx=Math.max(0,a);tx<Math.min(COLS*AREAS.length,b);tx++)for(let y=0;y<ROWS;y++)if(blockedTile(tx,y)&&((tx%COLS===0||tx%COLS===COLS-1)||y===0||y===ROWS-1))drawWall(tx,y);
+for(const d of decorations)drawDecor(d);
+for(let z=Math.max(0,Math.floor(camera/ROOM_W)-1);z<=Math.min(4,Math.floor((camera+W)/ROOM_W)+1);z++){drawGuide(z);drawRecord(z);}
+drawPlayer();
+let vignette=ctx.createLinearGradient(0,0,0,H);vignette.addColorStop(0,'#081a2233');vignette.addColorStop(.16,'#00000000');vignette.addColorStop(.8,'#00000000');vignette.addColorStop(1,'#081a2255');ctx.fillStyle=vignette;ctx.fillRect(0,0,W,H);
+}
+function gameLoop(t){let dt=Math.min(.04,(t-last)/1000||0);last=t;elapsed+=dt;if(started&&!modalOpen){let dx=0,dy=0;if(keys.has('ArrowLeft')||keys.has('a')||touchKeys.has('left'))dx--;if(keys.has('ArrowRight')||keys.has('d')||touchKeys.has('right'))dx++;if(keys.has('ArrowUp')||keys.has('w')||touchKeys.has('up'))dy--;if(keys.has('ArrowDown')||keys.has('s')||touchKeys.has('down'))dy++;player.moving=!!(dx||dy);if(dx||dy){let speed=(keys.has('Shift')?235:175)*dt,len=Math.hypot(dx,dy);dx=dx/len*speed;dy=dy/len*speed;if(canStand(player.x+dx,player.y))player.x+=dx;if(canStand(player.x,player.y+dy))player.y+=dy;player.direction=dx<0?-1:dx>0?1:player.direction;}
+ const z=areaIndex();if(z!==areaNow)updateUI();nearTarget=near();$('hint').style.display=nearTarget?'flex':'none';if(nearTarget)$('hint-text').textContent=nearTarget.type==='record'?(collected.has(z)?'Reler registro / responder':'Ler registro histórico'):'Conversar com a guia';
+}else{player.moving=false;$('hint').style.display='none';}
+ camera+=(Math.max(0,Math.min(WORLD_W-W,player.x-W*.5))-camera)*Math.min(1,dt*6);draw();requestAnimationFrame(gameLoop);}
+function modal(html){modalOpen=true;keys.clear();touchKeys.clear();$('modal-content').innerHTML=html;$('modal-root').classList.remove('hidden');$('modal').scrollTop=0;$('modal-close').focus();}
+function closeModal(){modalOpen=false;$('modal-root').classList.add('hidden');$('modal-content').innerHTML='';canvas.focus();}
+function openRecord(i){if(!collected.has(i)){collected.add(i);save();updateUI();}const r=AREAS[i].record;let done=solved.has(i);modal(`<div class="modal-eyebrow">Registro ${i+1} de 5 · ${done?'Desafio concluído':'Memória recuperada'}</div><h2>${r.title}</h2><div class="modal-meta"><span class="pill">${r.period}</span><span class="pill">✦ Guardado no inventário</span></div><p>${r.text}</p><blockquote>${r.context}</blockquote><p style="font-size:12px">Fonte de referência: <a href="${r.source}" target="_blank" rel="noopener">saiba mais sobre esta história ↗</a></p><div class="modal-actions"><button type="button" class="primary" id="quiz-btn">${done?'Revisar desafio':'Responder desafio →'}</button><button type="button" class="secondary" id="back-btn">Voltar ao mapa</button></div>`);$('quiz-btn').onclick=()=>openQuiz(i);$('back-btn').onclick=closeModal;}
+function openQuiz(i){let r=AREAS[i].record;modal(`<div class="modal-eyebrow">Desafio ${i+1} de 5 · Teste seu conhecimento</div><h2>${r.question}</h2><p>Escolha a alternativa correta para abrir o próximo caminho. Você pode tentar quantas vezes quiser.</p><div class="choices" id="choices">${r.options.map((o,n)=>`<button type="button" class="choice" data-answer="${n}"><span class="letter">${'ABC'[n]}</span>${o}</button>`).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><div class="modal-actions" id="quiz-actions"><button type="button" class="secondary" id="read-again">← Reler registro</button></div>`);$('read-again').onclick=()=>openRecord(i);document.querySelectorAll('#choices .choice').forEach(btn=>btn.onclick=()=>answerQuiz(i,Number(btn.dataset.answer)));}
+function answerQuiz(i,n){const r=AREAS[i].record;const fb=$('feedback');if(n===r.answer){solved.add(i);collected.add(i);save();updateUI();document.querySelectorAll('#choices .choice').forEach(b=>{b.disabled=true;if(Number(b.dataset.answer)===n)b.classList.add('right');});fb.className='feedback visible success';fb.textContent='✓ Resposta certa! '+r.explain+(i===4?' Você recuperou todas as memórias.':' O caminho para a próxima área foi aberto.');$('quiz-actions').innerHTML=`<button type="button" class="primary" id="continue-btn">${i===4?'Concluir jornada ✦':'Seguir aventura →'}</button>`;$('continue-btn').onclick=()=>i===4?openEnd():closeModal();}else{const btn=document.querySelector(`#choices [data-answer="${n}"]`);btn.classList.add('wrong');fb.className='feedback visible';fb.textContent='Ainda não. '+r.hint+' Tente outra alternativa.';setTimeout(()=>{if(btn.isConnected)btn.classList.remove('wrong');},500);}}
+function openGuide(i){const messages=['O passado guarda vozes importantes. Aproxime-se do pergaminho iluminado e pressione E para conhecê-las.','As mulheres negras também lideraram movimentos de resistência. Descubra uma dessas histórias no registro adiante.','Comunidades quilombolas construíram formas de organização e solidariedade. Explore o jardim!','A luta por liberdade também aconteceu por meio das palavras, do jornalismo e do direito.','A literatura guarda experiências que precisam ser ouvidas. Encontre a última memória.'];modal(`<div class="modal-eyebrow">Encontro no mapa</div><h2>Guardiã da Memória</h2><p>${messages[i]}</p><p>Ao recuperar o documento, ele ficará salvo no seu inventário. Responda à pergunta para abrir o próximo caminho.</p><div class="modal-actions"><button class="primary" type="button" id="guide-ok">Continuar explorando →</button></div>`);$('guide-ok').onclick=closeModal;}
+function openInventory(){let list=[...collected].sort((a,b)=>a-b);modal(`<div class="modal-eyebrow">Coleção histórica</div><h2>Inventário de memórias</h2><p>Você encontrou <strong>${collected.size} de 5 registros</strong>. Selecione um documento para reler e responder a perguntas pendentes.</p>${list.length?`<div class="item-list">${list.map(i=>`<button type="button" class="item" data-record="${i}"><span class="item-icon">${AREAS[i].record.symbol}</span><span><strong>${AREAS[i].record.title}</strong><small>${solved.has(i)?'✓ Desafio concluído':'◌ Desafio pendente'} · ${AREAS[i].record.period}</small></span></button>`).join('')}</div>`:`<div class="empty-state"><span>▤</span><p>O inventário ainda está vazio. Explore o mapa e encontre o primeiro pergaminho brilhante!</p></div>`}<div class="modal-actions"><button type="button" class="secondary" id="inv-close">Voltar ao mapa</button></div>`);document.querySelectorAll('[data-record]').forEach(b=>b.onclick=()=>openRecord(Number(b.dataset.record)));$('inv-close').onclick=closeModal;}
+function openHelp(){modal(`<div class="modal-eyebrow">Guia do explorador</div><h2>Como jogar</h2><p><strong>1.</strong> Use as setas ou WASD para andar pelo mapa. Segure Shift para acelerar.</p><p><strong>2.</strong> Quando encontrar um pergaminho iluminado, aproxime-se e pressione <strong>E</strong> (ou Interagir no celular). Converse com a guia, se quiser.</p><p><strong>3.</strong> Leia a história, responda à pergunta e avance pela passagem aberta à direita.</p><p><strong>4.</strong> Pressione <strong>I</strong> para reler documentos no inventário a qualquer momento.</p><p>A jornada é salva automaticamente neste navegador. Não há limite de erros nem cronômetro.</p><div class="modal-actions"><button type="button" class="primary" id="help-ok">Entendi!</button></div>`);$('help-ok').onclick=closeModal;}
+function openEnd(){modal(`<div class="modal-eyebrow">Jornada concluída · 5 de 5</div><h2>Você fez a memória florescer! ✦</h2><p>Você conheceu cinco trajetórias que revelam a resistência, a liderança, a cultura, a luta por direitos e a força da literatura afro-brasileira.</p><blockquote>A Consciência Negra nos convida a aprender com a história, valorizar contribuições da população negra e construir uma sociedade mais justa e respeitosa.</blockquote><div class="medals">${AREAS.map(a=>`<span>✦ ${a.record.title}</span>`).join('')}</div><p>O conhecimento não termina aqui. Use seu inventário para reler os registros ou consulte as fontes históricas ao final da página.</p><div class="modal-actions"><button type="button" class="primary" id="end-close">Voltar ao mapa</button><button type="button" class="secondary" id="end-inventory">Ver inventário</button></div>`);$('end-close').onclick=closeModal;$('end-inventory').onclick=openInventory;}
+function interact(){if(!started||modalOpen)return;let p=near();if(!p)return;p.type==='record'?openRecord(p.area):openGuide(p.area);}
+function begin(){started=true;$('intro').style.display='none';canvas.focus();}
+$('start-btn').onclick=begin;$('inventory-top').onclick=$('inventory-side').onclick=openInventory;$('help-top').onclick=openHelp;$('modal-close').onclick=closeModal;$('modal-root').addEventListener('click',e=>{if(e.target===$('modal-root'))closeModal();});$('touch-interact').onclick=interact;
+$('reset-btn').onclick=()=>{if(confirm('Deseja apagar as memórias coletadas e recomeçar?')){collected.clear();solved.clear();player.x=4.5*T;player.y=5.5*T;camera=0;save();closeModal();updateUI();}};
+const keyNormalize=(e)=>e.key.length===1?e.key.toLowerCase():e.key;
+window.addEventListener('keydown',e=>{const k=keyNormalize(e);if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Shift'].includes(k))e.preventDefault();if(modalOpen){if(k==='Escape')closeModal();return;}if(!started)return;if(k==='e'||k===' ')interact();else if(k==='i')openInventory();else if(k==='Escape')openHelp();keys.add(k);});
+window.addEventListener('keyup',e=>keys.delete(keyNormalize(e)));window.addEventListener('blur',()=>{keys.clear();touchKeys.clear();});
+document.querySelectorAll('[data-dir]').forEach(b=>{let d=b.dataset.dir;b.addEventListener('pointerdown',e=>{e.preventDefault();touchKeys.add(d);b.classList.add('active');b.setPointerCapture(e.pointerId);});for(const evt of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(evt,()=>{touchKeys.delete(d);b.classList.remove('active');});});
+// ==== ECOS DA HISTÓRIA 0.2 — SISTEMAS ADICIONAIS ====
+const K2='ecos-da-historia-v2';
+let cluesFound=new Set(), soundOn=true, audioContext=null, notificationTimer=null, museumSeen=false;
+const GUIDE_DATA=[
+ {name:'Lia',role:'Guardiã do Bosque',tone:'#b98261',outfit:'#416d68',hair:'#25292f',intro:'Bem-vindo ao Bosque da Memória! Este lugar guarda lembranças sobre Palmares. Antes de abrir o livro, precisamos reunir dois fragmentos que estão pelo jardim.',fact:'O Quilombo dos Palmares existiu na região da atual Alagoas e é lembrado como símbolo da resistência negra à escravidão.',after:'Você encontrou os dois fragmentos. Agora o registro sobre Zumbi está pronto para ser estudado.'},
+ {name:'Bia',role:'Pesquisadora de Histórias',tone:'#a66b48',outfit:'#915b70',hair:'#221e27',intro:'Às vezes uma história fica incompleta porque a participação das mulheres foi pouco registrada. Vamos encontrar duas pistas sobre liderança e memória?',fact:'Dandara é lembrada por sua ligação com a resistência em Palmares. Há lacunas nos registros históricos sobre sua vida; por isso é importante distinguir memória, tradição e documentação.',after:'Muito bem! Esses vestígios ajudam a reconhecer mulheres negras como protagonistas da história.'},
+ {name:'Nara',role:'Cuidadora dos Jardins',tone:'#8b5339',outfit:'#c69a53',hair:'#292825',intro:'Nos Jardins da Liberdade, cultivar também significa cuidar da comunidade. Encontre os dois vestígios sobre o Quilombo do Quariterê.',fact:'Tereza de Benguela liderou o Quilombo do Quariterê, na região do atual Mato Grosso, onde havia formas de organização e produção comunitária.',after:'Ótimo trabalho! O registro principal conta como Tereza liderou sua comunidade.'},
+ {name:'André',role:'Leitor da Praça',tone:'#9c5f44',outfit:'#576899',hair:'#28282d',intro:'A palavra também pode defender direitos. Há duas pistas nesta praça, uma ligada à imprensa e outra ao trabalho jurídico. Consegue encontrá-las?',fact:'Luiz Gama atuou como jornalista, poeta e defensor da liberdade de pessoas escravizadas. Foi reconhecido por lei como Patrono da Abolição em 2018.',after:'As pistas mostram dois caminhos de atuação: comunicação e defesa de direitos. Agora leia o documento.'},
+ {name:'Rosa',role:'Bibliotecária das Vozes',tone:'#b47750',outfit:'#65917a',hair:'#2b2427',intro:'Livros preservam vozes que precisam ser escutadas. Procure dois vestígios: um fala de um diário, o outro, da força da literatura.',fact:'Carolina Maria de Jesus publicou Quarto de Despejo em 1960. Sua escrita registra experiências cotidianas e desigualdades sociais.',after:'Você reuniu as pistas. O último registro está esperando por você na biblioteca.'}
+];
+const CLUES=[
+ [ {title:'Comunidade',text:'Palmares reuniu comunidades que construíram maneiras de viver, cultivar e se organizar.',icon:'⌂'}, {title:'Resistência',text:'Palmares resistiu a diferentes ataques no período colonial e tornou-se símbolo de luta por liberdade.',icon:'✦'} ],
+ [ {title:'Protagonismo',text:'Mulheres negras também foram agentes de resistência, embora suas histórias nem sempre tenham sido documentadas.',icon:'✿'}, {title:'Memória e registro',text:'Sobre Dandara, há menos documentação histórica do que sobre outras lideranças; seu legado é lembrado por diferentes fontes e tradições.',icon:'⌘'} ],
+ [ {title:'Quariterê',text:'Tereza de Benguela liderou o Quilombo do Quariterê, também conhecido como Quilombo do Piolho.',icon:'❀'}, {title:'Vida coletiva',text:'O quilombo reuniu pessoas negras e indígenas e desenvolveu formas próprias de produção e organização.',icon:'☼'} ],
+ [ {title:'Jornalismo',text:'Luiz Gama usou sua escrita e atuação pública para denunciar injustiças.',icon:'✎'}, {title:'Direitos',text:'Ele colocou conhecimentos jurídicos a serviço da liberdade de pessoas escravizadas.',icon:'⚖'} ],
+ [ {title:'Diário',text:'Carolina Maria de Jesus escreveu sobre a própria vida e o cotidiano em São Paulo.',icon:'▤'}, {title:'Literatura',text:'Quarto de Despejo, publicado em 1960, tornou sua escrita conhecida em todo o Brasil.',icon:'✎'} ]
+];
+const clueKey=(z,j)=>z*2+j;
+function cluePos(z,j){return {x:(z*COLS+(j===0?3.5:9.5))*T,y:(j===0?3.5:8.5)*T};}
+function cluesIn(z){return Number(cluesFound.has(clueKey(z,0)))+Number(cluesFound.has(clueKey(z,1)));}
+function allClues(z){return cluesIn(z)===2;}
+function sound(kind='pick'){
+ if(!soundOn)return;
+ try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;audioContext=audioContext||new Ctx();
+ if(audioContext.state==='suspended')audioContext.resume();
+ const notes=kind==='win'?[523,659,784]:kind==='wrong'?[230]:kind==='talk'?[390]:kind==='gate'?[392,523]:[520,680];
+ const t=audioContext.currentTime;
+ notes.forEach((hz,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain();o.type=kind==='wrong'?'triangle':'sine';o.frequency.setValueAtTime(hz,t+i*.095);g.gain.setValueAtTime(.0001,t+i*.095);g.gain.exponentialRampToValueAtTime(.055,t+i*.095+.015);g.gain.exponentialRampToValueAtTime(.0001,t+i*.095+.145);o.connect(g);g.connect(audioContext.destination);o.start(t+i*.095);o.stop(t+i*.095+.16);});
+ }catch(e){}
+}
+function toast(message){const el=$('toast');el.textContent=message;el.classList.add('active');clearTimeout(notificationTimer);notificationTimer=setTimeout(()=>el.classList.remove('active'),2500);}
+function save(){try{localStorage.setItem(K2,JSON.stringify({collected:[...collected],solved:[...solved],clues:[...cluesFound],x:player.x,y:player.y,soundOn}));}catch(e){}}
+function load(){
+ try{let s=JSON.parse(localStorage.getItem(K2)||'null');const migrated=!s;
+ if(!s)s=JSON.parse(localStorage.getItem(K)||'null');if(!s)return;
+ const safe=arr=>new Set((Array.isArray(arr)?arr:[]).filter(n=>Number.isInteger(n)&&n>=0&&n<5));
+ collected=safe(s.collected);solved=safe(s.solved);
+ cluesFound=new Set((s.clues||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<10));
+ if(migrated)for(const i of new Set([...collected,...solved])){cluesFound.add(clueKey(i,0));cluesFound.add(clueKey(i,1));}
+ for(const i of solved){collected.add(i);cluesFound.add(clueKey(i,0));cluesFound.add(clueKey(i,1));}
+ if(typeof s.x==='number'&&typeof s.y==='number'&&Number.isFinite(s.x)&&Number.isFinite(s.y)){
+  player.x=Math.max(72,Math.min(WORLD_W-72,s.x));player.y=Math.max(72,Math.min(H-72,s.y));
+ }
+ if(typeof s.soundOn==='boolean')soundOn=s.soundOn;
+ }catch(e){}
+}
+function near(){
+ let z=areaIndex();let targets=[{type:'record',area:z,pos:recordPos(z),range:82},{type:'guide',area:z,pos:guidePos(z),range:77}];
+ for(let j=0;j<2;j++)targets.push({type:'clue',area:z,part:j,pos:cluePos(z,j),range:76});
+ let found=null,best=Infinity;
+ for(const p of targets){let d=dist(player,p.pos);if(d<p.range&&d<best){found=p;best=d;}}
+ return found;
+}
+function objective(z){
+ if(solved.has(z))return z===4?['Exposição concluída','Visite o Museu das Memórias para rever suas descobertas.']:['Siga para a próxima região','A passagem à direita está aberta. Continue sua aventura!'];
+ const n=cluesIn(z);if(n<2)return ['Investigue as pistas',`Encontre os ${2-n} fragmentos brilhantes que faltam neste cenário. Depois procure o registro histórico.`];
+ if(!collected.has(z))return ['Revele o registro','As duas pistas foram encontradas! Procure o pergaminho iluminado e descubra esta história.'];
+ return ['Conclua o desafio','Leia o registro no diário ou no mapa e resolva o desafio para abrir a passagem.'];
+}
+function updateUI(){
+ areaNow=areaIndex();const z=areaNow,[ot,od]=objective(z);
+ $('zone-name').textContent=AREAS[z].name;
+ $('hud-progress').textContent='✦ Memórias '+collected.size+'/5';
+ $('hud-area').textContent=String(z+1).padStart(2,'0')+' / 05';
+ $('clue-hud').textContent='◇ Pistas '+cluesIn(z)+'/2';
+ $('completed-label').textContent=solved.size+'/5 concluídos';
+ $('inventory-number').textContent=collected.size+' registros →';
+ $('museum-number').textContent=solved.size+' / 5 →';
+ $('foot-progress').textContent=solved.size+' de 5';
+ $('track').innerHTML=AREAS.map((_,i)=>'<i class="'+(solved.has(i)?'done':'')+'"></i>').join('');
+ $('objective-title').textContent=ot;$('objective-desc').textContent=od;
+ $('objective-dots').innerHTML='<span style="font-size:11px;color:#d5dfd9;margin-right:4px">Pistas:</span>'+[0,1].map(j=>'<i class="'+(cluesFound.has(clueKey(z,j))?'done':'')+'"></i>').join('');
+ $('chapters').innerHTML=AREAS.map((a,i)=>{const state=solved.has(i)?'done':i===z?'current':'';const subtitle=solved.has(i)?'✓ Registro exposto':i===z?`${cluesIn(i)}/2 pistas • ${collected.has(i)?'Desafio pendente':'Explorando'}`:i<=solved.size?'Disponível para explorar':'Aguardando desbloqueio';return `<li class="chapter ${state}"><span class="num">${solved.has(i)?'✓':String(i+1).padStart(2,'0')}</span><span class="chapter-text"><strong>${a.name}</strong><span>${subtitle}</span></span></li>`;}).join('');
+ $('sound-toggle').textContent=soundOn?'♫':'♩';$('sound-toggle').setAttribute('aria-pressed',String(soundOn));$('sound-toggle').title=soundOn?'Silenciar sons':'Ativar sons';
+}
+function drawGuide(z){
+ const guide=GUIDE_DATA[z],p=guidePos(z),x=p.x-camera,y=p.y;
+ if(x<-48||x>W+48)return;
+ const bob=Math.sin(elapsed*2+z)*1.6;
+ ellipse(x,y+21,16,5,'#081b1d75');
+ ctx.save();ctx.translate(Math.round(x),Math.round(y+bob));
+ rect(-10,5,8,18,'#25313c');rect(2,5,8,18,'#283745');
+ rect(-14,-8,28,19,guide.outfit);rect(-17,-5,5,14,guide.tone);rect(12,-5,5,14,guide.tone);
+ rect(-11,-29,22,23,guide.tone);
+ rect(-12,-33,24,10,guide.hair);rect(-13,-28,5,14,guide.hair);rect(8,-29,5,11,guide.hair);
+ rect(-6,-16,3,3,'#292422');rect(4,-16,3,3,'#292422');
+ rect(-4,-9,8,2,'#6e4432');
+ if(z===1){rect(-16,-34,32,5,'#5e3851');rect(-11,0,22,3,'#f8d8a3');}
+ if(z===2){rect(-14,-10,28,4,'#e7be75');rect(-10,-39,20,7,'#dfc58c');}
+ if(z===3){rect(-14,-5,8,13,'#c7d2d2');rect(-10,-32,20,4,'#64656b');}
+ if(z===4){rect(-15,0,30,5,'#debf7e');rect(-12,-30,24,4,'#b69856');}
+ ctx.restore();
+ if(dist(player,p)<96 && !modalOpen)textCanvas('E • conversar',x,y-51,11,'#fff1c3');else textCanvas(guide.name,x,y-48,12,'#fff1cd');
+}
+function drawClue(z,j){
+ if(cluesFound.has(clueKey(z,j)))return;
+ const p=cluePos(z,j),x=p.x-camera,y=p.y;
+ if(x<-80||x>W+80)return;
+ const h=Math.sin(elapsed*3+z+j)*3;
+ ctx.save();ctx.globalAlpha=.19+.07*Math.sin(elapsed*3+j);ellipse(x,y-9,28,25,'#fff6ae');ctx.restore();
+ ellipse(x,y+17,16,5,'#0a252e77');
+ rect(x-15,y+4,30,16,'#615344');rect(x-11,y,23,6,'#c1a57b');
+ ctx.save();ctx.translate(x,y-13+h);ctx.rotate(.10*Math.sin(elapsed*1.8+j));
+ if(j===0){rect(-10,-10,20,21,'#ffe6a5');rect(-7,-7,13,2,'#876f45');rect(-7,-1,15,2,'#9e794b');rect(-7,5,10,2,'#9e794b');}
+ else{rect(-13,-8,26,18,'#dbbd6c');rect(-9,-11,18,4,'#ffeaa4');rect(-9,-3,18,2,'#8b6448');rect(-7,3,14,2,'#8b6448');}
+ ctx.restore();textCanvas('✧',x,y-45,19,'#ffdc8c');
+}
+function drawPlayer(){
+ const x=player.x-camera,y=player.y;
+ const step=player.moving?Math.sin(elapsed*13)*4:0;
+ const arm=player.moving?Math.sin(elapsed*13+Math.PI)*3:0;
+ ellipse(x,y+20,16,6,'#061c1e96');
+ ctx.save();ctx.translate(Math.round(x),Math.round(y+(player.moving?Math.sin(elapsed*26)*1.0:0)));
+ rect(-10,4,8,16+step,'#24394b');rect(2,4,8,16-step,'#2b4050');
+ rect(-12,-8,24,20,'#e5ad60');
+ rect(-16,-6+arm,6,13,'#9c5d3d');rect(10,-6-arm,6,13,'#9c5d3d');
+ rect(-10,-28,20,23,'#a46a48');
+ rect(-12,-33,24,12,'#24292e');rect(-14,-26,5,12,'#23282c');rect(8,-27,5,12,'#23282c');
+ if(player.direction<0){rect(-6,-16,3,3,'#182826');rect(1,-16,3,3,'#182826');rect(-15,-8,6,5,'#bc6b51');}
+ else{rect(-5,-16,3,3,'#182826');rect(4,-16,3,3,'#182826');rect(9,-8,6,5,'#bc6b51');}
+ rect(-10,8,20,3,'#466e5c');
+ ctx.restore();
+}
+function ambient(z){
+ // detalhes decorativos animados em cada região
+ const shift=z*ROOM_W-camera;if(shift>W+200||shift<-ROOM_W-200)return;
+ const v=elapsed;
+ if(z===0){for(let k=0;k<8;k++){let x=shift+80+k*88+Math.sin(v*.75+k*8)*14,y=78+(k%4)*110+Math.sin(v*1.2+k)*19;ellipse(x,y,2.5,2.5,'#ffecae9c');}}
+ if(z===1){for(let k=0;k<10;k++){let x=shift+50+k*69+Math.sin(v+k)*15,y=80+(k%4)*110+(v*13+k*33)%75;rect(x,y,4,3,k%2?'#e3b8bd':'#e5cc8e');}}
+ if(z===2){
+  for(let k=0;k<3;k++){let x=shift+95+k*86,y=99+(k%2)*56;
+   ellipse(x,y,33,19,'#345e6b');ellipse(x,y,26,13,'#5a9a98');
+   ctx.save();ctx.globalAlpha=.38;ctx.strokeStyle='#e6f4c0';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x+Math.sin(v+k)*3,y,11+Math.sin(v*2+k)*2,5,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+  }
+ }
+ if(z===3){for(let k=0;k<5;k++){let x=shift+85+k*129;rect(x,84,3,42,'#a6a48b');ellipse(x+1,84,7,7,'#f9df93');ctx.save();ctx.globalAlpha=.13+.05*Math.sin(v*3+k);ellipse(x+1,84,21,20,'#fff4b1');ctx.restore();}}
+ if(z===4){for(let k=0;k<10;k++){let x=shift+65+k*70,y=84+(k%4)*99+Math.sin(v+k)*7;ellipse(x,y,2,2,'#ffe6aa77');}}
+}
+function draw(){
+ rect(0,0,W,H,'#355746');const a=Math.floor(camera/T)-1,b=Math.ceil((camera+W)/T)+1;
+ for(let tx=Math.max(0,a);tx<Math.min(COLS*AREAS.length,b);tx++)for(let y=0;y<ROWS;y++)drawTile(tx,y);
+ for(let z=Math.max(0,Math.floor(camera/ROOM_W)-1);z<=Math.min(4,Math.floor((camera+W)/ROOM_W)+1);z++)landmark(z);
+ for(let tx=Math.max(0,a);tx<Math.min(COLS*AREAS.length,b);tx++)for(let y=0;y<ROWS;y++)if(blockedTile(tx,y)&&((tx%COLS===0||tx%COLS===COLS-1)||y===0||y===ROWS-1))drawWall(tx,y);
+ for(const d of decorations)drawDecor(d);
+ for(let z=Math.max(0,Math.floor(camera/ROOM_W)-1);z<=Math.min(4,Math.floor((camera+W)/ROOM_W)+1);z++){
+  ambient(z);drawGuide(z);for(let j=0;j<2;j++)drawClue(z,j);drawRecord(z);
+ }
+ drawPlayer();
+ const vignette=ctx.createLinearGradient(0,0,0,H);vignette.addColorStop(0,'#081a2240');vignette.addColorStop(.15,'#00000000');vignette.addColorStop(.8,'#00000000');vignette.addColorStop(1,'#081a225a');ctx.fillStyle=vignette;ctx.fillRect(0,0,W,H);
+}
+function gameLoop(t){
+ const dt=Math.min(.04,(t-last)/1000||0);last=t;elapsed+=dt;
+ if(started&&!modalOpen){
+  let dx=0,dy=0;
+  if(keys.has('ArrowLeft')||keys.has('a')||touchKeys.has('left'))dx--;
+  if(keys.has('ArrowRight')||keys.has('d')||touchKeys.has('right'))dx++;
+  if(keys.has('ArrowUp')||keys.has('w')||touchKeys.has('up'))dy--;
+  if(keys.has('ArrowDown')||keys.has('s')||touchKeys.has('down'))dy++;
+  player.moving=!!(dx||dy);
+  if(dx||dy){let speed=(keys.has('Shift')?235:175)*dt,len=Math.hypot(dx,dy);dx=dx/len*speed;dy=dy/len*speed;
+   if(canStand(player.x+dx,player.y))player.x+=dx;
+   if(canStand(player.x,player.y+dy))player.y+=dy;
+   player.direction=dx<0?-1:dx>0?1:player.direction;
+  }
+  const z=areaIndex();if(z!==areaNow){updateUI();toast('✦ '+AREAS[z].name);}
+  nearTarget=near();$('hint').style.display=nearTarget?'flex':'none';
+  if(nearTarget){const p=nearTarget;$('hint-text').textContent=p.type==='clue'?'Investigar pista':p.type==='record'?(allClues(z)?(collected.has(z)?'Abrir registro / desafio':'Ler registro histórico'):'Ainda faltam pistas'):'Conversar com '+GUIDE_DATA[z].name;}
+ }else{player.moving=false;$('hint').style.display='none';}
+ camera+=(Math.max(0,Math.min(WORLD_W-W,player.x-W*.5))-camera)*Math.min(1,dt*6);
+ draw();requestAnimationFrame(gameLoop);
+}
+function collectClue(i,j){
+ const c=CLUES[i][j],already=cluesFound.has(clueKey(i,j));
+ if(!already){cluesFound.add(clueKey(i,j));sound('pick');save();updateUI();}
+ const n=cluesIn(i);
+ modal(`<div class="modal-eyebrow">Vestígio histórico · ${n} de 2 encontrados</div><h2>${c.icon} ${c.title}</h2><p>${c.text}</p><div class="quest-note">${allClues(i)?'✦ As duas pistas foram reunidas! O pergaminho central pode ser aberto.':'✧ Mais um vestígio está escondido nesta região. Explore o cenário e converse com o guia para receber orientações.'}</div><div class="modal-actions"><button type="button" class="primary" id="clue-ok">Continuar explorando →</button><button type="button" class="secondary" id="clue-diario">Abrir diário</button></div>`);
+ $('clue-ok').onclick=()=>{closeModal();if(allClues(i))toast('✦ Registro desbloqueado!');};$('clue-diario').onclick=openInventory;
+}
+function openRecord(i){
+ if(!allClues(i)){
+  modal(`<div class="modal-eyebrow">Registro protegido · ${cluesIn(i)} / 2 pistas</div><h2>Reúna as pistas primeiro</h2><p>Este documento será aberto quando você encontrar dois vestígios espalhados por <strong>${AREAS[i].name}</strong>.</p><p>Procure pequenos fragmentos dourados que brilham pelo mapa. Ao se aproximar, pressione <strong>E</strong>.</p><div class="modal-actions"><button type="button" class="primary" id="locked-back">Voltar à exploração →</button></div>`);$('locked-back').onclick=closeModal;return;
+ }
+ if(!collected.has(i)){collected.add(i);sound('pick');save();updateUI();}
+ const r=AREAS[i].record,done=solved.has(i);
+ modal(`<div class="modal-eyebrow">Registro ${i+1} de 5 · ${done?'Exposto no museu':'Memória recuperada'}</div><h2>${r.title}</h2><div class="modal-meta"><span class="pill">${r.period}</span><span class="pill">✦ No diário</span><span class="pill">◇ 2 pistas analisadas</span></div><p>${r.text}</p><blockquote>${r.context}</blockquote>${i===1?'<p style="font-size:12px;color:#c9d4d0">Observação: existem lacunas na documentação sobre a vida de Dandara; a história recupera seu protagonismo sem apresentar diálogos fictícios como fatos.</p>':''}<p style="font-size:12px">Fonte: <a href="${r.source}" target="_blank" rel="noopener noreferrer">aprofundar a pesquisa ↗</a></p><div class="modal-actions"><button type="button" class="primary" id="quiz-btn">${done?'Rever desafio':'Começar desafio →'}</button><button type="button" class="secondary" id="back-btn">Voltar ao mapa</button></div>`);
+ $('quiz-btn').onclick=()=>openQuiz(i);$('back-btn').onclick=closeModal;
+}
+function successChallenge(i,txt){
+ if(!solved.has(i)){solved.add(i);collected.add(i);save();updateUI();sound('win');}
+ const final=i===4;
+ modal(`<div class="modal-eyebrow">${final?'Cinco memórias recuperadas':'Desafio concluído'}</div><h2>${final?'A exposição está completa!':'Caminho desbloqueado!'} ✦</h2><div class="success-banner">✓ ${txt}</div><p>${final?'Você completou os cinco capítulos. Agora todas as memórias fazem parte de uma exposição virtual.':'O registro foi adicionado à exposição do Museu das Memórias. A passagem à direita está aberta!'}</p><div class="modal-actions"><button type="button" class="primary" id="success-next">${final?'Visitar museu final →':'Voltar ao mapa →'}</button><button type="button" class="secondary" id="success-diario">Ver diário</button></div>`);
+ $('success-next').onclick=()=>{if(final)openEnd();else{closeModal();toast('✦ Nova região desbloqueada!');}};
+ $('success-diario').onclick=openInventory;
+}
+function openQuiz(i){
+ if(!collected.has(i)){openRecord(i);return;}
+ const r=AREAS[i].record;
+ if(i===0||i===2){
+ modal(`<div class="modal-eyebrow">Desafio ${i+1} de 5 · Escolha a resposta</div><h2>${r.question}</h2><p>Leia com atenção. Não há limite de tentativas.</p><div class="choices" id="choices">${r.options.map((o,n)=>`<button type="button" class="choice" data-answer="${n}"><span class="letter">${'ABC'[n]}</span>${o}</button>`).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><div class="modal-actions"><button type="button" class="secondary" id="read-again">← Reler registro</button></div>`);
+ $('read-again').onclick=()=>openRecord(i);
+ document.querySelectorAll('#choices .choice').forEach(btn=>btn.onclick=()=>{
+  let n=Number(btn.dataset.answer);if(n===r.answer){document.querySelectorAll('#choices .choice').forEach(b=>b.disabled=true);btn.classList.add('right');successChallenge(i,r.explain);}
+  else{sound('wrong');btn.classList.add('wrong');$('feedback').className='feedback visible';$('feedback').textContent='Ainda não. '+r.hint;setTimeout(()=>{if(btn.isConnected)btn.classList.remove('wrong');},600);}
+ });return;
+ }
+ if(i===1){
+ const statements=[
+  {text:'As mulheres negras também participaram das lutas de resistência à escravidão.',correct:true},
+  {text:'Somente lideranças masculinas fizeram parte da história de Palmares.',correct:false},
+  {text:'É importante reconhecer quando faltam documentos sobre uma trajetória histórica.',correct:true}
+ ];
+ let pointer=0;
+ function showStatement(){const s=statements[pointer];modal(`<div class="modal-eyebrow">Desafio 2 de 5 · Verdadeiro ou falso · ${pointer+1}/3</div><h2>O que a história nos ensina?</h2><p>Marque se a afirmação é verdadeira ou falsa.</p><blockquote>${s.text}</blockquote><div class="choices"><button class="choice" id="vf-true"><span class="letter">V</span> Verdadeiro</button><button class="choice" id="vf-false"><span class="letter">F</span> Falso</button></div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><div class="modal-actions"><button type="button" class="secondary" id="read-again">← Reler registro</button></div>`);
+ $('read-again').onclick=()=>openRecord(i);
+ for(const [id,val] of [['vf-true',true],['vf-false',false]])$(id).onclick=()=>{
+  if(val!==s.correct){sound('wrong');$('feedback').className='feedback visible';$('feedback').textContent='Tente novamente. Pense no registro histórico e no papel das mulheres na resistência.';return;}
+  pointer++;sound('pick');if(pointer===3)successChallenge(i,'Reconhecer o protagonismo das mulheres negras é parte da construção de uma memória mais completa.');else showStatement();
+ };}showStatement();return;
+ }
+ if(i===3){
+ const events=[{id:0,year:'1695',description:'O 20 de novembro marca a morte de Zumbi dos Palmares.'},{id:1,year:'1888',description:'A escravidão foi legalmente abolida no Brasil.'},{id:2,year:'2018',description:'Luiz Gama foi reconhecido por lei como Patrono da Abolição.'}];
+ let picks=[];const shuffled=[events[2],events[0],events[1]];
+ function orderView(){modal(`<div class="modal-eyebrow">Desafio 4 de 5 · Linha do tempo</div><h2>Organize os acontecimentos</h2><p>Clique nos três acontecimentos do <strong>mais antigo ao mais recente</strong>. As datas fazem parte de marcos históricos.</p><div class="order-list" id="order-list">${shuffled.map(ev=>`<button type="button" class="order-choice" data-event="${ev.id}" ${picks.includes(ev.id)?'disabled':''}><strong>${ev.year}</strong> · ${ev.description}</button>`).join('')}</div><div class="chip-row" id="chosen-order">${picks.length?picks.map((id,n)=>`<span class="chip">${n+1}º · ${events[id].year}</span>`).join(''):'<span style="color:#c3d2d0;font-size:12px">Sua linha do tempo aparecerá aqui.</span>'}</div><div class="feedback ${picks.length?'visible':''}" id="feedback">${picks.length?'Clique no próximo acontecimento.':''}</div><div class="modal-actions"><button type="button" class="secondary" id="undo-order">↶ Desfazer</button><button type="button" class="secondary" id="read-again">← Reler registro</button></div>`);
+ $('read-again').onclick=()=>openRecord(i);$('undo-order').onclick=()=>{picks.pop();orderView();};
+ document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>{picks.push(Number(b.dataset.event));sound('pick');if(picks.length===3){if(picks.every((id,n)=>id===n))successChallenge(i,'A linha do tempo recuperou marcos da resistência, da abolição e do reconhecimento histórico de Luiz Gama.');else{sound('wrong');picks=[];orderView();$('feedback').className='feedback visible';$('feedback').textContent='A sequência ainda não está correta. Observe os anos e tente novamente.';}}else orderView();});
+ }orderView();return;
+ }
+ if(i===4){
+ const opts=[{text:'Registrou experiências do cotidiano e desigualdades sociais.',good:true},{text:'Sua obra ajudou a dar visibilidade a experiências pouco ouvidas.',good:true},{text:'Escreveu exclusivamente sobre a nobreza colonial.',good:false},{text:'Publicou Quarto de Despejo no século XVII.',good:false}];
+ let selected=new Set();
+ function choiceView(){modal(`<div class="modal-eyebrow">Desafio 5 de 5 · Selecione duas contribuições</div><h2>O legado de Carolina Maria de Jesus</h2><p>Selecione as <strong>duas afirmações corretas</strong> sobre a autora.</p><div class="choices">${opts.map((o,n)=>`<button type="button" class="choice ${selected.has(n)?'selected':''}" data-multi="${n}"><span class="letter">${selected.has(n)?'✓':'+'}</span>${o.text}</button>`).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><div class="modal-actions"><button type="button" class="primary" id="confirm-multi" ${selected.size!==2?'disabled style="opacity:.48;cursor:not-allowed"':''}>Confirmar seleção (${selected.size}/2)</button><button type="button" class="secondary" id="read-again">← Reler registro</button></div>`);
+ $('read-again').onclick=()=>openRecord(i);
+ document.querySelectorAll('[data-multi]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.multi);if(selected.has(n))selected.delete(n);else if(selected.size<2)selected.add(n);sound('talk');choiceView();});
+ $('confirm-multi').onclick=()=>{if(selected.size===2&&[...selected].every(n=>opts[n].good))successChallenge(i,'Carolina Maria de Jesus transformou sua escrita em um importante testemunho da vida cotidiana e das desigualdades sociais.');else{sound('wrong');selected.clear();choiceView();$('feedback').className='feedback visible';$('feedback').textContent='Essas duas afirmações não estão corretas. Releia o registro e tente novamente.';}};
+ }choiceView();
+ }
+}
+function openGuide(i){
+ const g=GUIDE_DATA[i];sound('talk');
+ function speak(mode='intro'){
+ const n=cluesIn(i),text=mode==='fact'?g.fact:mode==='mission'?`Você encontrou ${n} de 2 pistas. ${n===2?g.after:'Olhe perto das árvores e dos caminhos. Os dois fragmentos têm um brilho dourado.'}`:(n===2?g.after:g.intro);
+ modal(`<div class="modal-eyebrow">Morador fictício · ${g.role}</div><div class="dialogue-head"><span class="portrait" style="--portrait:${g.outfit}">${['✦','✿','❀','⚖','▤'][i]}</span><div><h2>${g.name}</h2><span class="pill">${g.role}</span></div></div><div class="dialogue-box">“${text}”</div><p style="font-size:12px;color:#b8c9c8">Este personagem é fictício e foi criado para orientar a exploração.</p><button type="button" class="dialogue-choice" id="guide-mission">◇ Como encontro as pistas?</button><button type="button" class="dialogue-choice" id="guide-fact">✦ Conte uma curiosidade histórica</button><div class="modal-actions"><button type="button" class="primary" id="guide-ok">Voltar a explorar →</button></div>`);
+ $('guide-mission').onclick=()=>speak('mission');$('guide-fact').onclick=()=>speak('fact');$('guide-ok').onclick=closeModal;
+ }speak();
+}
+function openInventory(){
+ const list=[...collected].sort((a,b)=>a-b);
+ modal(`<div class="modal-eyebrow">Diário do explorador · Memórias recuperadas</div><h2>Seu diário de histórias</h2><p>Registros: <strong>${collected.size}/5</strong> · Pistas encontradas: <strong>${cluesFound.size}/10</strong>. Abra um documento para reler o conteúdo e completar desafios pendentes.</p>${list.length?`<div class="item-list">${list.map(i=>`<button type="button" class="item" data-record="${i}"><span class="item-icon">${AREAS[i].record.symbol}</span><span><strong>${AREAS[i].record.title}</strong><small>${solved.has(i)?'✓ Exposto no museu':'◌ Desafio pendente'} · ${AREAS[i].record.period}</small></span></button>`).join('')}</div>`:'<div class="empty-state"><span>▤</span><p>O diário está vazio. Investigue os fragmentos dourados do primeiro cenário!</p></div>'}<div class="modal-actions"><button type="button" class="secondary" id="inv-close">Voltar ao mapa</button><button type="button" class="secondary" id="inv-museum">Visitar museu</button></div>`);
+ document.querySelectorAll('[data-record]').forEach(b=>b.onclick=()=>openRecord(Number(b.dataset.record)));
+ $('inv-close').onclick=closeModal;$('inv-museum').onclick=openMuseum;
+}
+function openMuseum(){
+ museumSeen=true;
+ modal(`<div class="modal-eyebrow">Exposição interativa · Museu das Memórias</div><h2>As vozes da história</h2><p>Cada registro concluído se transforma em uma peça da exposição. Você já montou <strong>${solved.size} de 5 espaços</strong>.</p><div class="museum-grid">${AREAS.map((a,i)=>`<div class="museum-card ${solved.has(i)?'':'locked'}"><div class="icon">${solved.has(i)?a.record.symbol:'◇'}</div><div><strong>${solved.has(i)?a.record.title:'Espaço reservado'}</strong><small>${solved.has(i)?a.short:'Continue explorando para revelar esta memória.'}</small></div></div>`).join('')}</div><div class="quest-note">${solved.size===5?'✦ Exposição completa! A memória se fortalece quando histórias são pesquisadas, compartilhadas e preservadas.':'✧ Conclua os desafios nos capítulos para ocupar todos os espaços da exposição.'}</div><div class="modal-actions"><button class="primary" type="button" id="museum-done">${solved.size===5?'Ver conclusão ✦':'Voltar ao mapa →'}</button><button type="button" class="secondary" id="museum-diario">Ver diário</button></div>`);
+ $('museum-done').onclick=()=>solved.size===5?openEnd():closeModal();$('museum-diario').onclick=openInventory;
+}
+function openEnd(){
+ modal(`<div class="modal-eyebrow">Missão concluída · 5 capítulos · 10 pistas</div><h2>O Museu das Memórias está aberto! ✦</h2><p>Você explorou cinco ambientes, dialogou com moradores fictícios e conheceu histórias reais de pessoas negras que marcaram o Brasil.</p><blockquote>A Consciência Negra também é um convite a ouvir vozes diversas, reconhecer o racismo na história e no presente e valorizar a contribuição da população negra para a sociedade.</blockquote><div class="medals">${AREAS.map(a=>`<span>✦ ${a.record.title}</span>`).join('')}</div><p>Esta é uma introdução educativa. Para continuar aprendendo, consulte as fontes históricas que aparecem nos registros e no rodapé da página.</p><div class="modal-actions"><button type="button" class="primary" id="end-museum">Explorar exposição →</button><button type="button" class="secondary" id="end-map">Voltar ao mapa</button></div>`);
+ $('end-museum').onclick=openMuseum;$('end-map').onclick=closeModal;
+}
+function openHelp(){
+ modal(`<div class="modal-eyebrow">Guia de jogo · Versão 0.2</div><h2>Como jogar</h2><p><strong>1. Explore:</strong> use WASD ou setas para andar. Segure Shift para correr.</p><p><strong>2. Investigue:</strong> encontre <strong>dois fragmentos dourados</strong> em cada região. Pressione E (ou Interagir no celular) ao se aproximar.</p><p><strong>3. Converse:</strong> encontre o guia de cada região e escolha opções de diálogo para conhecer pistas e curiosidades.</p><p><strong>4. Leia:</strong> com as pistas reunidas, abra o pergaminho central e descubra o registro histórico.</p><p><strong>5. Avance:</strong> complete desafios variados para liberar o caminho e acrescentar documentos ao museu.</p><p><strong>6. Consulte:</strong> I abre o diário; M abre o museu. Esc fecha janelas. O progresso é salvo automaticamente no navegador.</p><div class="quest-note">Não existe tempo limite nem penalidade por errar. Aprender faz parte da aventura!</div><div class="modal-actions"><button type="button" class="primary" id="help-ok">Começar a explorar →</button></div>`);
+ $('help-ok').onclick=closeModal;
+}
+function interact(){if(!started||modalOpen)return;const p=near();if(!p)return;if(p.type==='record')openRecord(p.area);else if(p.type==='guide')openGuide(p.area);else collectClue(p.area,p.part);}
+function begin(){started=true;$('intro').style.display='none';canvas.focus();toast('◇ Encontre as duas pistas douradas');}
+// Novas ações e ajustes dos controles / salvamento
+$('museum-top').onclick=$('museum-side').onclick=openMuseum;
+$('sound-toggle').onclick=()=>{soundOn=!soundOn;save();updateUI();if(soundOn)sound('pick');};
+$('reset-btn').onclick=()=>{if(confirm('Deseja apagar todo o progresso desta jornada e recomeçar do início?')){collected.clear();solved.clear();cluesFound.clear();player.x=4.5*T;player.y=5.5*T;camera=0;save();closeModal();updateUI();toast('Jornada reiniciada');}};
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(modalOpen)return;if(k==='m'){e.preventDefault();if(started)openMuseum();}});
+// ==== FIM DA EXTENSÃO 0.2 ====
+
+load(); // preserve completed records even when the page is reopened
+if(!canStand(player.x,player.y)){player.x=4.5*T;player.y=5.5*T;}
+if(collected.size||solved.size||cluesFound.size)$('start-btn').textContent='Continuar jornada →';
+updateUI();requestAnimationFrame(gameLoop);
+})();
+</script>
+</body>
+</html>
